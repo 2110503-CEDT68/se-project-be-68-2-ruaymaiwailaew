@@ -23,8 +23,8 @@ Make sure you have the following installed on your machine:
 1. **Clone the repository to your local machine**:
 ``` bash
 cd ${WORKDIR}
-git clone https://github.com/2110503-CEDT68/be-project-68-gofiber.git
-cd be-project-68-gofiber
+git clone https://github.com/2110503-CEDT68/se-project-be-68-2-ruaymaiwailaew.git
+cd se-project-be-68-2-ruaymaiwailaew
 ```
 2. **Install dependencies**:
 This will install all required packages (like express, mongoose, dotenv, etc.) listed in package.json.
@@ -51,3 +51,9 @@ Import postman.json in project to postman and try to test api
 - [6833295221 Auraion Pinsiri](https://github.com/bmybest)
 - [6833085821 Natpakan Sainam](https://github.com/EnxFad)
 - [6833063021 Thitipong Phuangphet](https://github.com/Thitipong-PP)
+- [6833112021 Tanawat Srisukphrom](https://github.com/AiMlxV)
+- [6833283721 Ananyarat Hariruk]()
+- [6833273421 Suwapat Suwattanametee](https://github.com/SuwapatSu)
+- [6833263121 Siraphop Meethong]()
+- [6833259721 Sorrapat Chiraprapoosak]()
+- [6833240721 Wachirawit Pattha]()
