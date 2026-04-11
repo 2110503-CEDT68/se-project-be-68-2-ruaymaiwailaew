@@ -21,12 +21,12 @@ router.route('/availability')
     .get(protect, authorize('admin','user','dentist'), getDentistAvailability); // Show dentist availability
 
 router.route('/')
-    .get(protect, authorize('admin','user'), getBookings) // Only admin can get all booking //user only get their own booking
+    .get(protect, authorize('admin','user','dentist'), getBookings) // admin get all, user get their own, dentist get their bookings
     .post(protect, authorize('user'), createBooking); // Only user can create booking
 
 router.route('/:id')
-    .get(protect, authorize('admin','user'), getBooking)
-    .put(protect, authorize('admin','user'), updateBooking)
-    .delete(protect, authorize('admin','user'), deleteBooking);
+    .get(protect, authorize('admin','user','dentist'), getBooking)
+    .put(protect, authorize('admin','user','dentist'), updateBooking) // dentist can edit their bookings
+    .delete(protect, authorize('admin','user','dentist'), deleteBooking);
 
 module.exports = router;

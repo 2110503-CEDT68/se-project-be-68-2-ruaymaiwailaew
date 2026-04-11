@@ -60,7 +60,15 @@ exports.getDentistAvailability = async (req, res, next) => {
 exports.getBookings = async (req, res, next) => {
     let query;
 
-    if (req.user.role !== 'admin') {
+    if (req.user.role === 'admin') {
+        query = Booking.find().populate({
+            path: 'dentist',
+            select: 'name yearsOfExperience areaOfExpertise'
+        }).populate({
+            path: 'user',
+            select: 'name email'
+        });
+    } else if (req.user.role === 'user') {
         query = Booking.find({ user: req.user.id }).populate({
             path: 'dentist',
             select: 'name yearsOfExperience areaOfExpertise'
@@ -68,11 +76,11 @@ exports.getBookings = async (req, res, next) => {
             path: 'user',
             select: 'name email'
         });
-    } else {
-        query = Booking.find().populate({
+    } else if (req.user.role === 'dentist') {
+        query = Booking.find({ dentist: req.user.id }).populate({
             path: 'dentist',
             select: 'name yearsOfExperience areaOfExpertise'
-            }).populate({
+        }).populate({
             path: 'user',
             select: 'name email'
         });
@@ -109,7 +117,23 @@ exports.getBooking = async (req, res, next) => {
             return res.status(404).json({ success: false, message: `Booking not found` });
         }
 
-        if (booking.user.toString() !== req.user.id && req.user.role !== 'admin') {
+        if (req.user.role === 'admin') {
+            // Admin can access any booking
+        } else if (req.user.role === 'user') {
+            if (booking.user.toString() !== req.user.id) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Not authorized to access this booking'
+                });
+            }
+        } else if (req.user.role === 'dentist') {
+            if (booking.dentist.toString() !== req.user.id) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Not authorized to access this booking'
+                });
+            }
+        } else {
             return res.status(403).json({
                 success: false,
                 message: 'Not authorized to access this booking'
@@ -172,7 +196,17 @@ exports.updateBooking = async (req, res, next) => {
             return res.status(404).json({ success: false, message: `No booking with the id of ${req.params.id}` });
         }
 
-        if (booking.user.toString() !== req.user.id && req.user.role !== 'admin') {
+        if (req.user.role === 'admin') {
+            // Admin can update any booking
+        } else if (req.user.role === 'user') {
+            if (booking.user.toString() !== req.user.id) {
+                return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to update this booking` });
+            }
+        } else if (req.user.role === 'dentist') {
+            if (booking.dentist.toString() !== req.user.id) {
+                return res.status(403).json({ success: false, message: `Dentist ${req.user.id} is not authorized to update this booking` });
+            }
+        } else {
             return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to update this booking` });
         }
 
@@ -203,7 +237,17 @@ exports.deleteBooking = async (req, res, next) => {
             return res.status(404).json({ success: false, message: `Booking not found` });
         }
 
-        if (booking.user.toString() !== req.user.id && req.user.role !== 'admin') {
+        if (req.user.role === 'admin') {
+            // Admin can delete any booking
+        } else if (req.user.role === 'user') {
+            if (booking.user.toString() !== req.user.id) {
+                return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to delete this booking` });
+            }
+        } else if (req.user.role === 'dentist') {
+            if (booking.dentist.toString() !== req.user.id) {
+                return res.status(403).json({ success: false, message: `Dentist ${req.user.id} is not authorized to delete this booking` });
+            }
+        } else {
             return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to delete this booking` });
         }
 
