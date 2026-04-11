@@ -1,0 +1,792 @@
+{
+  "info": {
+    "_postman_id": "c19692a4-1231-4816-9cd8-5fb9c6cb3e60",
+    "name": "Software Dev Final Project",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53937847",
+    "_collection_link": "https://go.postman.co/collection/53937847-c19692a4-1231-4816-9cd8-5fb9c6cb3e60?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"TOKEN\", pm.response.json().token);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Dummy\",\n    \"telephone\": \"0123456789\",\n    \"email\": \"dummy@example.com\",\n    \"password\": \"12345678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Root}}/api/auth/register",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"TOKEN\", pm.response.json().token);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"dummy@example.com\",\n    \"password\": \"12345678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Root}}/api/auth/login",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Me",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{Root}}/api/auth/me",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"TOKEN\", null);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{Root}}/api/auth/logout",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Security",
+      "item": [
+        {
+          "name": "Injection",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"TOKEN\", pm.response.json().token);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": {\"$gt\":\"\"},\n    \"password\": \"12345678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Root}}/api/auth/login",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "XSS",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"TOKEN\", pm.response.json().token);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Dummy<script>console.log('XSS Attack!');</script>\",\n    \"telephone\": \"0123456789\",\n    \"email\": \"dummy2@example.com\",\n    \"password\": \"12345678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Root}}/api/auth/register",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Booking",
+      "item": [
+        {
+          "name": "Get all bookings",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{Root}}/api/bookings",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a booking",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{Root}}/api/bookings/:id",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create a booking",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{Root}}/api/bookings",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update a booking",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{Root}}/api/bookings/:id",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a booking",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{Root}}/api/bookings/:id",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Dentist",
+      "item": [
+        {
+          "name": "Get All dentist",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{Root}}/api/dentist",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "dentist"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a dentist",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{Root}}/api/dentist/:id",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "dentist",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "699fcc1194d660053f0b2978"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create a dentist",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"DentistDummy\",\n    \"yearsOfExperience\": 1000,\n    \"areaOfExpertise\": \"animal\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Root}}/api/dentist",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "dentist"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update a dentist",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"DentistDummy\",\n    \"yearsOfExperience\": 1000,\n    \"areaOfExpertise\": \"human\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Root}}/api/dentist/:id",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "dentist",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "699fcc1194d660053f0b2978"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a dentist",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{Root}}/api/dentist/:id",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "dentist",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "699fcc1194d660053f0b2978"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Dentist Login",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Review",
+      "item": [
+        {
+          "name": "create review",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{Root}}/api/dentist/:dentistId/reviews",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "dentist",
+                ":dentistId",
+                "reviews"
+              ],
+              "variable": [
+                {
+                  "key": "dentistId",
+                  "value": "69a0472ae53fd420e2fb1ce0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get Reviews",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{Root}}/api/dentist/:dentistId/reviews",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "dentist",
+                ":dentistId",
+                "reviews"
+              ],
+              "variable": [
+                {
+                  "key": "dentistId",
+                  "value": "69a0472ae53fd420e2fb1ce0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get Review",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update Review",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{Root}}/api/reviews/:id",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete Review",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{Root}}/api/reviews/:id",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "69a04975068d6e67125d942d"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "Root",
+      "value": ""
+    }
+  ]
+}
