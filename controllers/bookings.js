@@ -1,4 +1,58 @@
 const Booking = require('../models/Booking');
+const User = require('../models/User');
+
+// @desc    View dentist availability
+// @route   GET /api/bookings/availability
+// @access  Private
+exports.getDentistAvailability = async (req, res, next) => {
+    try {
+        // Get all dentists
+        const dentists = await User.find({ role: 'dentist' }).select('_id name yearsOfExperience areaOfExpertise telephone email');
+
+        // Get all bookings with dentist info
+        const bookings = await Booking.find().populate({
+            path: 'dentist',
+            select: 'name'
+        }).populate({
+            path: 'user',
+            select: 'name email'
+        });
+
+        // Create availability map
+        const availability = dentists.map(dentist => {
+            const dentistBookings = bookings.filter(booking => 
+                booking.dentist._id.toString() === dentist._id.toString()
+            );
+
+            return {
+                dentistId: dentist._id,
+                name: dentist.name,
+                yearsOfExperience: dentist.yearsOfExperience,
+                areaOfExpertise: dentist.areaOfExpertise,
+                telephone: dentist.telephone,
+                email: dentist.email,
+                bookedDates: dentistBookings.map(booking => ({
+                    bookingId: booking._id,
+                    bookingDate: booking.bookingDate,
+                    bookedBy: booking.user.name,
+                    bookedByEmail: booking.user.email
+                }))
+            };
+        });
+
+        res.status(200).json({
+            success: true,
+            count: availability.length,
+            data: availability
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            success: false,
+            message: "Cannot find dentist availability"
+        });
+    }
+};
 
 // @desc    View all bookings
 // @route   GET /api/bookings
