@@ -30,7 +30,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"Dummy\",\n    \"telephone\": \"0123456789\",\n    \"email\": \"dummy@example.com\",\n    \"password\": \"12345678\"\n}",
+              "raw": "{\n    \"name\": \"Dummy2\",\n    \"telephone\": \"0123456789\",\n    \"email\": \"dummy2@example.com\",\n    \"password\": \"12345678\",\n    \"role\": \"user\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -271,13 +271,14 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{Root}}/api/bookings",
+              "raw": "{{Root}}/api/bookings/availability",
               "host": [
                 "{{Root}}"
               ],
               "path": [
                 "api",
-                "bookings"
+                "bookings",
+                "availability"
               ]
             }
           },
@@ -311,7 +312,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "1"
+                  "value": "69da1e02eccfb1d5225e511e"
                 }
               ]
             }
@@ -333,6 +334,15 @@
             },
             "method": "POST",
             "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingDate\": \"2026-04-15T10:30:00Z\",\n  \"dentist\": \"69da1cc7eccfb1d5225e5107\" \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{Root}}/api/bookings",
               "host": [
@@ -361,6 +371,15 @@
             },
             "method": "PUT",
             "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingDate\": \"2200-05-15T10:30:00Z\",\n  \"dentist\": \"69da1cc7eccfb1d5225e5107\" \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{Root}}/api/bookings/:id",
               "host": [
@@ -374,7 +393,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "69da211a95543914e73a7841"
                 }
               ]
             }
@@ -409,7 +428,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": ""
+                  "value": "69da211a95543914e73a7841"
                 }
               ]
             }
@@ -501,7 +520,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"DentistDummy\",\n    \"yearsOfExperience\": 1000,\n    \"areaOfExpertise\": \"animal\"\n}",
+              "raw": "{\n    \"name\": \"DentistDummy\",\n    \"telephone\": \"0123456789\",\n    \"email\": \"dentistdummy@example.com\",\n    \"password\": \"12345678\",\n    \"yearsOfExperience\": 1000,\n    \"areaOfExpertise\": \"ghost\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -558,7 +577,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "699fcc1194d660053f0b2978"
+                  "value": "69da1c52eccfb1d5225e50fb"
                 }
               ]
             }
@@ -593,7 +612,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "699fcc1194d660053f0b2978"
+                  "value": "69da1c52eccfb1d5225e50fb"
                 }
               ]
             }
@@ -602,9 +621,42 @@
         },
         {
           "name": "Dentist Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"TOKEN\", pm.response.json().token);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
-            "method": "GET",
-            "header": []
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"dentistdummy@example.com\",\n    \"password\": \"12345678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Root}}/api/auth/login",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
           },
           "response": []
         }
