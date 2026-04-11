@@ -1,5 +1,5 @@
 const Booking = require('../models/Booking');
-const Dentist = require('../models/Dentist');
+const User = require('../models/User');
 const Review = require('../models/Review');
 
 // @desc    View all dentist
@@ -8,7 +8,7 @@ const Review = require('../models/Review');
 exports.getDentists = async (req, res, next) => {
     try {
         // Get all dentists in database
-        const dentists = await Dentist.find();
+        const dentists = await User.find({ role: 'dentist' }).select('-password');
 
         res.status(200).json({
             success: true,
@@ -30,10 +30,10 @@ exports.getDentists = async (req, res, next) => {
 exports.getDentist = async (req, res, next) => {
     try {
         // Find dentist by id
-        const dentist = await Dentist.findById(req.params.id).populate('reviews');
+        const dentist = await User.findById(req.params.id).select('-password');
 
         // Don't find dentist
-        if (!dentist) return res.status(404).json({
+        if (!dentist || dentist.role !== 'dentist') return res.status(404).json({
             success: false,
             message: `Dentist not found`
         });
@@ -57,14 +57,21 @@ exports.getDentist = async (req, res, next) => {
 exports.createDentist = async (req, res, next) => {
     try {
         // Get body request
-        const { name, yearsOfExperience, areaOfExpertise } = req.body;
+        const { name, telephone, email, password, yearsOfExperience, areaOfExpertise } = req.body;
 
         // Create a dentist in database
-        const dentist = await Dentist.create({
+        const dentist = await User.create({
             name,
+            telephone,
+            email,
+            password,
             yearsOfExperience,
-            areaOfExpertise
+            areaOfExpertise,
+            role: 'dentist'
         });
+
+        // Remove password from response
+        dentist.password = undefined;
 
         res.status(201).json({
             success: true,
@@ -88,17 +95,17 @@ exports.updateDentist = async (req, res, next) => {
         const { name, yearsOfExperience, areaOfExpertise } = req.body;
 
         // Find dentist by id and update
-        const dentist = await Dentist.findByIdAndUpdate(req.params.id, {
+        const dentist = await User.findByIdAndUpdate(req.params.id, {
             name,
             yearsOfExperience,
             areaOfExpertise
         }, {
             new: true,
             runValidators: true
-        });
+        }).select('-password');
 
         // Don't find dentist
-        if (!dentist) return res.status(404).json({
+        if (!dentist || dentist.role !== 'dentist') return res.status(404).json({
             success: false,
             message: `Dentist not found`
         });
@@ -121,17 +128,17 @@ exports.updateDentist = async (req, res, next) => {
 // @access  Private only admin
 exports.deleteDentist = async (req, res, next) => {
     try {
-        // Find dentist by id and delete
-        const dentist = await Dentist.findById(req.params.id);
+        // Find dentist by id
+        const dentist = await User.findById(req.params.id);
 
         // Don't find dentist
-        if (!dentist) return res.status(404).json({
+        if (!dentist || dentist.role !== 'dentist') return res.status(404).json({
             success: false,
             message: `Dentist not found`
         });
 
         await Booking.deleteMany({ dentist: req.params.id });
-        await Dentist.deleteOne({ _id: req.params.id });
+        await User.deleteOne({ _id: req.params.id });
         await Review.deleteMany({ dentist: req.params.id });
 
         res.status(200).json({

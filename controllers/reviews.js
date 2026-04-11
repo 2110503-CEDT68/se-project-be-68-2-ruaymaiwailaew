@@ -1,12 +1,12 @@
 const Review = require('../models/Review');
-const Dentist = require('../models/Dentist');
+const User = require('../models/User');
 
 exports.createReview = async (req, res, next) => {
     try {
 
-        const dentist = await Dentist.findById(req.params.dentistId);
+        const dentist = await User.findById(req.params.dentistId);
 
-        if (!dentist) {
+        if (!dentist || dentist.role !== 'dentist') {
             return res.status(404).json({
                 success: false,
                 message: 'Dentist not found'
