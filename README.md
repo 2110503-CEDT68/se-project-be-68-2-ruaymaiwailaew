@@ -45,7 +45,10 @@ npm start
 ```
 
 5. **Test in postman**:
-Import postman.json in project to postman and try to test api
+   
+   Import postman.json in project to postman and try to test api
+
+   **Don't forget to create an environment in Postman.**
 
 ## Project Team
 - [6833295221 Auraion Pinsiri](https://github.com/bmybest)
