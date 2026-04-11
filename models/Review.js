@@ -15,7 +15,7 @@ const ReviewSchema = new mongoose.Schema({
   },
   dentist: {
     type: mongoose.Schema.ObjectId,
-    ref: 'Dentist',
+    ref: 'User',
     required: true
   },
   user: {

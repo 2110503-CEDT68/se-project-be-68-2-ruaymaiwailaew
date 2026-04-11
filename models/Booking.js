@@ -12,7 +12,7 @@ const BookingSchema = new mongoose.Schema({
     },
     dentist: {
         type: mongoose.Schema.ObjectId,
-        ref: 'Dentist',
+        ref: 'User',
         required: [true, 'Please add a dentist']
     },
     createdAt: {
