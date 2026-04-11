@@ -28,8 +28,15 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['user', 'admin'],
+        enum: ['user', 'admin', 'dentist'],
         default: 'user'
+    },
+    yearsOfExperience: {
+        type: Number,
+        min: [0, 'The years of experience cannot be negative number']
+    },
+    areaOfExpertise: {
+        type: String
     },
     password: {
         type: String,
