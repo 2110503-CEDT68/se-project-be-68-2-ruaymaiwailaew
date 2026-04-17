@@ -3,53 +3,29 @@ const User = require('../models/User');
 
 // @desc    View dentist availability
 // @route   GET /api/bookings/availability
-// @access  Private
+// @access  Public
 exports.getDentistAvailability = async (req, res, next) => {
+    let query; 
+    query = Booking.find().populate({
+        path: 'dentist',
+        select: 'name yearsOfExperience areaOfExpertise'
+    }).populate({
+        path: 'user',
+        select: 'name email'
+    });
     try {
-        // Get all dentists
-        const dentists = await User.find({ role: 'dentist' }).select('_id name yearsOfExperience areaOfExpertise telephone email');
-
-        // Get all bookings with dentist info
-        const bookings = await Booking.find().populate({
-            path: 'dentist',
-            select: 'name'
-        }).populate({
-            path: 'user',
-            select: 'name email'
-        });
-
-        // Create availability map
-        const availability = dentists.map(dentist => {
-            const dentistBookings = bookings.filter(booking => 
-                booking.dentist._id.toString() === dentist._id.toString()
-            );
-
-            return {
-                dentistId: dentist._id,
-                name: dentist.name,
-                yearsOfExperience: dentist.yearsOfExperience,
-                areaOfExpertise: dentist.areaOfExpertise,
-                telephone: dentist.telephone,
-                email: dentist.email,
-                bookedDates: dentistBookings.map(booking => ({
-                    bookingId: booking._id,
-                    bookingDate: booking.bookingDate,
-                    bookedBy: booking.user.name,
-                    bookedByEmail: booking.user.email
-                }))
-            };
-        });
+        const bookings = await query;
 
         res.status(200).json({
             success: true,
-            count: availability.length,
-            data: availability
+            count: bookings.length,
+            data: bookings
         });
     } catch (err) {
         console.log(err);
         res.status(500).json({
             success: false,
-            message: "Cannot find dentist availability"
+            message: "Cannot find bookings"
         });
     }
 };
