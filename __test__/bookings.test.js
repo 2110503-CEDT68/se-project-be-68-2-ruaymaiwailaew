@@ -1,4 +1,3 @@
-// bookings.test.js
 const { updateBooking } = require('../controllers/bookings');
 const Booking = require('../models/Booking');
 
