@@ -1,6 +1,12 @@
 const Booking = require('../models/Booking');
 const User = require('../models/User');
 
+const logError = (err) => {
+    if (process.env.NODE_ENV !== 'test') {
+        console.log(err);
+    }
+};
+
 // @desc    View dentist availability
 // @route   GET /api/bookings/availability
 // @access  Public
@@ -22,7 +28,7 @@ exports.getDentistAvailability = async (req, res, next) => {
             data: bookings
         });
     } catch (err) {
-        console.log(err);
+        logError(err);
         res.status(500).json({
             success: false,
             message: "Cannot find bookings"
@@ -71,7 +77,7 @@ exports.getBookings = async (req, res, next) => {
             data: bookings
         });
     } catch (err) {
-        console.log(err);
+        logError(err);
         res.status(500).json({
             success: false,
             message: "Cannot find bookings"
@@ -121,7 +127,7 @@ exports.getBooking = async (req, res, next) => {
             data: booking
         });
     } catch (err) {
-        console.log(err);
+        logError(err);
         res.status(500).json({
             success: false,
             message: 'Cannot find booking'
@@ -168,7 +174,7 @@ exports.createBooking = async (req, res, next) => {
             data: booking
         });
     } catch (err) {
-        console.log(err);
+        logError(err);
         res.status(500).json({
             success: false,
             message: 'Cannot create booking'
@@ -209,7 +215,7 @@ exports.updateBooking = async (req, res, next) => {
         });
 
     } catch (err) {
-        console.log(err);
+        logError(err);
         res.status(500).json({
             success: false,
             message: 'Cannot update booking'
@@ -249,7 +255,7 @@ exports.deleteBooking = async (req, res, next) => {
             data: {}
         });
     } catch (err) {
-        console.log(err);
+        logError(err);
         res.status(500).json({
             success: false,
             message: 'Cannot delete booking'
