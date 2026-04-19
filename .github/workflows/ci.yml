@@ -9,8 +9,11 @@ on:
 
 jobs:
   test:
-    name: test functions
-    runs-on: [ubuntu-latest, windows-latest, macos-latest]
+    name: test functions / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - name: Checkout
