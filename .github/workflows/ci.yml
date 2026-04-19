@@ -1,4 +1,4 @@
-name: test functions
+name: Github CI
 
 on:
   push:
