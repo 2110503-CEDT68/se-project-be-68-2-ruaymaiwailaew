@@ -142,6 +142,21 @@ exports.createBooking = async (req, res, next) => {
 
         const { bookingDate, dentist } = req.body;
 
+        const dentistBooking = await Booking.findOne({
+            dentist,
+            bookingDate: {
+                $gte: new Date(new Date(bookingDate).setHours(0, 0, 0, 0)),
+                $lte: new Date(new Date(bookingDate).setHours(23, 59, 59, 999))
+            }
+        });
+
+        if (dentistBooking) {
+            return res.status(400).json({
+                success: false,
+                message: `The dentist is not available on ${new Date(bookingDate).toDateString()}`
+            });
+        }
+
         const booking = await Booking.create({
             bookingDate,
             user: req.user.id,
