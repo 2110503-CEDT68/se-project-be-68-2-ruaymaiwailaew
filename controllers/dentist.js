@@ -7,8 +7,8 @@ const Review = require('../models/Review');
 // @access  Private
 exports.getDentists = async (req, res, next) => {
     try {
-        // Get all dentists in database
-        const dentists = await User.find({ role: 'dentist' }).select('-password');
+        // Get all dentists in database (excluding deleted ones)
+        const dentists = await User.find({ role: 'dentist', isDeleted: false }).select('-password');
 
         res.status(200).json({
             success: true,
@@ -32,8 +32,8 @@ exports.getDentist = async (req, res, next) => {
         // Find dentist by id
         const dentist = await User.findById(req.params.id).select('-password');
 
-        // Don't find dentist
-        if (!dentist || dentist.role !== 'dentist') return res.status(404).json({
+        // Don't find dentist or dentist is deleted
+        if (!dentist || dentist.role !== 'dentist' || dentist.isDeleted) return res.status(404).json({
             success: false,
             message: `Dentist not found`
         });
@@ -49,7 +49,7 @@ exports.getDentist = async (req, res, next) => {
             message: 'Cannot find dentist'
         });
     }
-};
+};;
 
 // @desc    Create a dentist
 // @route   POST /api/dentist
