@@ -21,7 +21,7 @@ dotenv.config({ path: './config/config.env' });
 // Max request for windowsMs ms
 const limiter = rateLimit({
     windowMs: 10*60*1000,
-    max: 100
+    max: 109
 });
 
 const app = express();
