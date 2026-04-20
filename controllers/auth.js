@@ -143,7 +143,6 @@ exports.logout = async (req, res, next) => {
     });
 };
 
-<<<<<<< feature/delete-account
 // @desc    Delete account (soft delete)
 // @route   DELETE /auth/deleteAccount
 // @access  Private
@@ -183,7 +182,13 @@ exports.deleteAccount = async (req, res, next) => {
         });
     } catch (err) {
         res.status(500).json({
-=======
+            success: false,
+            message: err.message
+        });
+        console.error(err.message);
+    }
+};
+
 // @desc    Update user profile
 // @route   PUT /auth/updateprofile
 // @access  Private
@@ -224,14 +229,9 @@ exports.updateProfile = async (req, res, next) => {
         });
     } catch (err) {
         res.status(400).json({
->>>>>>> main
             success: false,
             message: err.message
         });
         console.error(err.message);
     }
-<<<<<<< feature/delete-account
-}
-=======
 };
->>>>>>> main
