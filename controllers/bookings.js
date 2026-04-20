@@ -14,17 +14,17 @@ exports.getDentistAvailability = async (req, res, next) => {
     let query; 
     query = Booking.find().populate({
         path: 'dentist',
-        select: 'name yearsOfExperience areaOfExpertise isDeleted',
-        match: { isDeleted: false }
+        select: 'name yearsOfExperience areaOfExpertise isDeleted isBanned',
+        match: { isDeleted: false, isBanned: false }
     }).populate({
         path: 'user',
-        select: 'name email isDeleted',
-        match: { isDeleted: false }
+        select: 'name email isDeleted isBanned',
+        match: { isDeleted: false, isBanned: false }
     });
     try {
         const bookings = await query;
 
-        // Filter out bookings from deleted users
+        // Filter out bookings from deleted or banned users
         const filteredBookings = bookings.filter(booking => booking.user !== null && booking.dentist !== null);
 
         res.status(200).json({
@@ -50,39 +50,39 @@ exports.getBookings = async (req, res, next) => {
     if (req.user.role === 'admin') {
         query = Booking.find().populate({
             path: 'dentist',
-            select: 'name yearsOfExperience areaOfExpertise isDeleted',
-            match: { isDeleted: false }
+            select: 'name yearsOfExperience areaOfExpertise isDeleted isBanned',
+            match: { isDeleted: false, isBanned: false }
         }).populate({
             path: 'user',
-            select: 'name email isDeleted',
-            match: { isDeleted: false }
+            select: 'name email isDeleted isBanned',
+            match: { isDeleted: false, isBanned: false }
         });
     } else if (req.user.role === 'user') {
         query = Booking.find({ user: req.user.id }).populate({
             path: 'dentist',
-            select: 'name yearsOfExperience areaOfExpertise isDeleted',
-            match: { isDeleted: false }
+            select: 'name yearsOfExperience areaOfExpertise isDeleted isBanned',
+            match: { isDeleted: false, isBanned: false }
         }).populate({
             path: 'user',
-            select: 'name email isDeleted',
-            match: { isDeleted: false }
+            select: 'name email isDeleted isBanned',
+            match: { isDeleted: false, isBanned: false }
         });
     } else if (req.user.role === 'dentist') {
         query = Booking.find({ dentist: req.user.id }).populate({
             path: 'dentist',
-            select: 'name yearsOfExperience areaOfExpertise isDeleted',
-            match: { isDeleted: false }
+            select: 'name yearsOfExperience areaOfExpertise isDeleted isBanned',
+            match: { isDeleted: false, isBanned: false }
         }).populate({
             path: 'user',
-            select: 'name email isDeleted',
-            match: { isDeleted: false }
+            select: 'name email isDeleted isBanned',
+            match: { isDeleted: false, isBanned: false }
         });
     }
 
     try {
         const bookings = await query;
         
-        // Filter out bookings from deleted users
+        // Filter out bookings from deleted or banned users
         const filteredBookings = bookings.filter(booking => booking.user !== null && booking.dentist !== null);
 
         res.status(200).json({
@@ -154,12 +154,19 @@ exports.getBooking = async (req, res, next) => {
 // @access  Private only user
 exports.createBooking = async (req, res, next) => {
     try {
-        // Check if user account is deleted
+        // Check if user account is deleted or banned
         const user = await User.findById(req.user.id);
         if (user.isDeleted) {
             return res.status(400).json({
                 success: false,
                 message: 'Account has been deleted'
+            });
+        }
+
+        if (user.isBanned) {
+            return res.status(400).json({
+                success: false,
+                message: 'Account has been banned'
             });
         }
 
@@ -171,9 +178,9 @@ exports.createBooking = async (req, res, next) => {
 
         const { bookingDate, dentist } = req.body;
 
-        // Check if dentist exists and is not deleted
+        // Check if dentist exists and is not deleted or banned
         const dentistUser = await User.findById(dentist);
-        if (!dentistUser || dentistUser.isDeleted) {
+        if (!dentistUser || dentistUser.isDeleted || dentistUser.isBanned) {
             return res.status(400).json({
                 success: false,
                 message: 'Dentist is not available'

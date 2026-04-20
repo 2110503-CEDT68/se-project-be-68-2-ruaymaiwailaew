@@ -88,6 +88,12 @@ exports.login = async (req, res, next) => {
             message: "This account has been deleted"
         });
 
+        // Check if account is banned
+        if (user.isBanned) return res.status(400).json({
+            success: false,
+            message: `This account has been banned${user.banReason ? ': ' + user.banReason : ''}`
+        });
+
         // Check matched password
         const isMatch = await user.matchPassword(password);
 
@@ -119,6 +125,14 @@ exports.me = async (req, res, next) => {
         return res.status(400).json({
             success: false,
             message: "This account has been deleted"
+        });
+    }
+
+    // Check if account is banned
+    if (user && user.isBanned) {
+        return res.status(400).json({
+            success: false,
+            message: `This account has been banned${user.banReason ? ': ' + user.banReason : ''}`
         });
     }
 
@@ -179,6 +193,114 @@ exports.deleteAccount = async (req, res, next) => {
             success: true,
             message: "Account deleted successfully",
             data: {}
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+        console.error(err.message);
+    }
+};
+
+// @desc    Ban user/dentist
+// @route   POST /auth/ban
+// @access  Private only admin
+exports.banUser = async (req, res, next) => {
+    try {
+        const {userId, reason} = req.body;
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide userId"
+            });
+        }
+
+        const userToBan = await User.findById(userId);
+
+        if (!userToBan) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        if (userToBan.isBanned) {
+            return res.status(400).json({
+                success: false,
+                message: "This user is already banned"
+            });
+        }
+
+        // Ban the user
+        userToBan.isBanned = true;
+        userToBan.bannedAt = new Date();
+        userToBan.banReason = reason || "No reason provided";
+        await userToBan.save();
+
+        res.status(200).json({
+            success: true,
+            message: `${userToBan.role} has been banned successfully`,
+            data: {
+                userId: userToBan._id,
+                email: userToBan.email,
+                bannedAt: userToBan.bannedAt,
+                banReason: userToBan.banReason
+            }
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+        console.error(err.message);
+    }
+};
+
+// @desc    Unban user/dentist
+// @route   POST /auth/unban
+// @access  Private only admin
+exports.unbanUser = async (req, res, next) => {
+    try {
+        const {userId} = req.body;
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide userId"
+            });
+        }
+
+        const userToUnban = await User.findById(userId);
+
+        if (!userToUnban) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        if (!userToUnban.isBanned) {
+            return res.status(400).json({
+                success: false,
+                message: "This user is not banned"
+            });
+        }
+
+        // Unban the user
+        userToUnban.isBanned = false;
+        userToUnban.bannedAt = null;
+        userToUnban.banReason = null;
+        await userToUnban.save();
+
+        res.status(200).json({
+            success: true,
+            message: `${userToUnban.role} has been unbanned successfully`,
+            data: {
+                userId: userToUnban._id,
+                email: userToUnban.email
+            }
         });
     } catch (err) {
         res.status(500).json({
