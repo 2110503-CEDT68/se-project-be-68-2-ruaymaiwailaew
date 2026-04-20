@@ -1,11 +1,7 @@
 const express = require('express');
 
 // Controller file
-<<<<<<< feature/delete-account
-const {register, login, me, logout, deleteAccount} = require('../controllers/auth');
-=======
-const {register, login, me, logout, updateProfile} = require('../controllers/auth');
->>>>>>> main
+const {register, login, me, logout, updateProfile, deleteAccount} = require('../controllers/auth');
 
 // Router
 const router = express.Router();
