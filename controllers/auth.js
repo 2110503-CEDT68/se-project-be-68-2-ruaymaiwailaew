@@ -29,7 +29,15 @@ const sendTokenResponse = (user, statusCode, res) => {
 exports.register = async (req, res, next) => {
     try {
         // Get body request
-        const {name, telephone, email, password, role} = req.body;
+        const {name, telephone, email, password, role, privacyPolicyAccepted} = req.body;
+
+        // Validate privacy policy acceptance
+        if (!privacyPolicyAccepted) {
+            return res.status(400).json({
+                success: false,
+                message: "Please accept the privacy policy to register"
+            });
+        }
 
         // Register
         const user = await User.create({
@@ -37,7 +45,8 @@ exports.register = async (req, res, next) => {
             telephone,
             email,
             password,
-            role
+            role,
+            privacyPolicyAccepted
         });
 
         sendTokenResponse(user, 201, res);
