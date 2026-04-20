@@ -86,7 +86,7 @@ describe('getDentistAvailability', () => {
 
         expect(populateMock).toHaveBeenCalledWith(expect.objectContaining({
             path: 'dentist',
-            select: 'name yearsOfExperience areaOfExpertise isDeleted'
+            select: 'name yearsOfExperience areaOfExpertise isDeleted isBanned'
         }));
     });
 
@@ -104,7 +104,7 @@ describe('getDentistAvailability', () => {
 
         expect(innerPopulateMock).toHaveBeenCalledWith(expect.objectContaining({
             path: 'user',
-            select: 'name email isDeleted'
+            select: 'name email isDeleted isBanned'
         }));
     });
 

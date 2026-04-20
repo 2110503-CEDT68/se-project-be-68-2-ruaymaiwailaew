@@ -6,7 +6,7 @@ exports.createReview = async (req, res, next) => {
 
         const dentist = await User.findById(req.params.dentistId);
 
-        if (!dentist || dentist.role !== 'dentist' || dentist.isDeleted) {
+        if (!dentist || dentist.role !== 'dentist' || dentist.isDeleted || dentist.isBanned) {
             return res.status(404).json({
                 success: false,
                 message: 'Dentist not found'
@@ -18,6 +18,13 @@ exports.createReview = async (req, res, next) => {
             return res.status(400).json({
                 success: false,
                 message: 'Account has been deleted'
+            });
+        }
+
+        if (user.isBanned) {
+            return res.status(400).json({
+                success: false,
+                message: 'Account has been banned'
             });
         }
 
@@ -54,15 +61,15 @@ exports.getReviews = async (req, res, next) => {
             dentist: req.params.dentistId
         }).populate({
             path: 'user',
-            select: 'name isDeleted',
-            match: { isDeleted: false }
+            select: 'name isDeleted isBanned',
+            match: { isDeleted: false, isBanned: false }
         }).populate({
             path: 'dentist',
-            select: 'name isDeleted',
-            match: { isDeleted: false }
+            select: 'name isDeleted isBanned',
+            match: { isDeleted: false, isBanned: false }
         });
 
-        // Filter out reviews from deleted users
+        // Filter out reviews from deleted or banned users
         const filteredReviews = reviews.filter(review => review.user !== null && review.dentist !== null);
 
         res.status(200).json({

@@ -1,10 +1,10 @@
 {
   "info": {
-    "_postman_id": "9da6d809-4613-43b0-a4cd-65aa5eeed4f3",
+    "_postman_id": "5ca3aa33-c56a-4f5f-b027-e64496b70c65",
     "name": "Software Dev Final Project",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "53937847",
-    "_collection_link": "https://go.postman.co/collection/53937847-9da6d809-4613-43b0-a4cd-65aa5eeed4f3?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/53937847-5ca3aa33-c56a-4f5f-b027-e64496b70c65?source=collection_link"
   },
   "item": [
     {
@@ -276,6 +276,82 @@
                 "api",
                 "auth",
                 "deleteaccount"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ban",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": \"69e67bac19e860d13aced4e5\",\n    \"reason\": \"You're so noob\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Root}}/api/auth/ban",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "ban"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Un Ban",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": \"69e67bac19e860d13aced4e5\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Root}}/api/auth/unban",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "unban"
               ]
             }
           },
