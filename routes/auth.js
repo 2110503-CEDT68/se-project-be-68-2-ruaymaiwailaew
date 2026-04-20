@@ -1,13 +1,13 @@
 const express = require('express');
 
 // Controller file
-const {register, login, me, logout, updateProfile, deleteAccount} = require('../controllers/auth');
+const {register, login, me, logout, updateProfile, deleteAccount, banUser, unbanUser} = require('../controllers/auth');
 
 // Router
 const router = express.Router();
 
 // Auth Middleware
-const {protect} = require('../middleware/auth');
+const {protect, authorize} = require('../middleware/auth');
 
 // Path and method
 router.post('/register', register);
@@ -16,5 +16,7 @@ router.get('/me', protect, me);
 router.put('/updateprofile', protect, updateProfile);
 router.get('/logout', protect, logout);
 router.delete('/deleteaccount', protect, deleteAccount);
+router.post('/ban', protect, authorize('admin'), banUser);
+router.post('/unban', protect, authorize('admin'), unbanUser);
 
 module.exports = router;
