@@ -1,7 +1,7 @@
 const express = require('express');
 
 // Controller file
-const {register, login, me, logout} = require('../controllers/auth');
+const {register, login, me, logout, deleteAccount} = require('../controllers/auth');
 
 // Router
 const router = express.Router();
@@ -14,5 +14,6 @@ router.post('/register', register);
 router.post('/login', login);
 router.get('/me', protect, me);
 router.get('/logout', protect, logout);
+router.delete('/deleteaccount', protect, deleteAccount);
 
 module.exports = router;
