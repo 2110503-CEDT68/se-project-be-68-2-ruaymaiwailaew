@@ -14,7 +14,7 @@ const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
 const cors = require('cors');
 
-// Read env file
+// Read env file when running in serverless mode.
 dotenv.config({ path: './config/config.env' });
 
 // Config rate limiting
@@ -62,7 +62,7 @@ app.use('/api/bookings', bookings);
 app.use('/api/dentist', dentist);
 app.use('/api/reviews', reviews);
 
-// Server port and listen
+// Export app for serverless platforms and server.js runtime.
 module.exports = app;
 
 //handle unhandled promise rejections
