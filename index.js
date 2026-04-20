@@ -20,7 +20,7 @@ dotenv.config({ path: './config/config.env' });
 // Config rate limiting
 const limiter = rateLimit({
     windowMs: 10*60*1000,
-    max: 750
+    max: 109
 });
 
 const app = express();
