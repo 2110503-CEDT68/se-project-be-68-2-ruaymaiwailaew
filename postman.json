@@ -191,6 +191,44 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"{{$randomFullName}}\",\n    \"telephone\": \"0987654321\"\n    // \"yearsOfExperience\": 99999\n    // \"areaOfExpertise\": \"fish\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Root}}/api/auth/updateprofile",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "updateprofile"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },

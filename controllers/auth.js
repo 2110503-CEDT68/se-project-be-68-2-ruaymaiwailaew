@@ -127,4 +127,51 @@ exports.logout = async (req, res, next) => {
         success: true,
         data: {}
     });
-}
+};
+
+// @desc    Update user profile
+// @route   PUT /auth/updateprofile
+// @access  Private
+exports.updateProfile = async (req, res, next) => {
+    try {
+        // Get fields to update (allow only specific fields)
+        const {name, telephone, areaOfExpertise, yearsOfExperience} = req.body;
+
+        // Validate input
+        if (!name && !telephone && !areaOfExpertise && yearsOfExperience === undefined) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide at least one field to update"
+            });
+        }
+
+        // Build update object with only provided fields
+        const updateData = {};
+        if (name) updateData.name = name;
+        if (telephone) updateData.telephone = telephone;
+        if (areaOfExpertise) updateData.areaOfExpertise = areaOfExpertise;
+        if (yearsOfExperience !== undefined) updateData.yearsOfExperience = yearsOfExperience;
+
+        // Update user
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            updateData,
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        res.status(200).json({
+            success: true,
+            data: user,
+            message: "Profile updated successfully"
+        });
+    } catch (err) {
+        res.status(400).json({
+            success: false,
+            message: err.message
+        });
+        console.error(err.message);
+    }
+};
