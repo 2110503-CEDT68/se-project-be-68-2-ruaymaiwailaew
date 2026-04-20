@@ -29,7 +29,15 @@ const sendTokenResponse = (user, statusCode, res) => {
 exports.register = async (req, res, next) => {
     try {
         // Get body request
-        const {name, telephone, email, password, role} = req.body;
+        const {name, telephone, email, password, role, privacyPolicyAccepted} = req.body;
+
+        // Validate privacy policy acceptance
+        if (!privacyPolicyAccepted) {
+            return res.status(400).json({
+                success: false,
+                message: "Please accept the privacy policy to register"
+            });
+        }
 
         // Register
         const user = await User.create({
@@ -37,7 +45,8 @@ exports.register = async (req, res, next) => {
             telephone,
             email,
             password,
-            role
+            role,
+            privacyPolicyAccepted
         });
 
         sendTokenResponse(user, 201, res);
@@ -134,6 +143,7 @@ exports.logout = async (req, res, next) => {
     });
 };
 
+<<<<<<< feature/delete-account
 // @desc    Delete account (soft delete)
 // @route   DELETE /auth/deleteAccount
 // @access  Private
@@ -173,9 +183,55 @@ exports.deleteAccount = async (req, res, next) => {
         });
     } catch (err) {
         res.status(500).json({
+=======
+// @desc    Update user profile
+// @route   PUT /auth/updateprofile
+// @access  Private
+exports.updateProfile = async (req, res, next) => {
+    try {
+        // Get fields to update (allow only specific fields)
+        const {name, telephone, areaOfExpertise, yearsOfExperience} = req.body;
+
+        // Validate input
+        if (!name && !telephone && !areaOfExpertise && yearsOfExperience === undefined) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide at least one field to update"
+            });
+        }
+
+        // Build update object with only provided fields
+        const updateData = {};
+        if (name) updateData.name = name;
+        if (telephone) updateData.telephone = telephone;
+        if (areaOfExpertise) updateData.areaOfExpertise = areaOfExpertise;
+        if (yearsOfExperience !== undefined) updateData.yearsOfExperience = yearsOfExperience;
+
+        // Update user
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            updateData,
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        res.status(200).json({
+            success: true,
+            data: user,
+            message: "Profile updated successfully"
+        });
+    } catch (err) {
+        res.status(400).json({
+>>>>>>> main
             success: false,
             message: err.message
         });
         console.error(err.message);
     }
+<<<<<<< feature/delete-account
 }
+=======
+};
+>>>>>>> main

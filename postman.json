@@ -229,6 +229,7 @@
             }
           },
           "response": []
+<<<<<<< feature/delete-account
         },
         {
           "name": "Delete Account",
@@ -280,6 +281,8 @@
             }
           },
           "response": []
+=======
+>>>>>>> main
         }
       ]
     },

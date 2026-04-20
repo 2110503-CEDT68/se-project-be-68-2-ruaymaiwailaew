@@ -44,6 +44,11 @@ const UserSchema = new mongoose.Schema({
         minlength: [6, 'Password should long more than 5'],
         select: false
     },
+    privacyPolicyAccepted: {
+        type: Boolean,
+        required: [true, 'Please accept privacy policy'],
+        default: false
+    },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
     isDeleted: {

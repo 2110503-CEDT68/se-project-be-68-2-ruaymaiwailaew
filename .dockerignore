@@ -1,0 +1,16 @@
+node_modules
+npm-debug.log
+
+.git
+.github
+.gitignore
+
+coverage
+__test__
+
+.env
+config/config.env
+
+Dockerfile
+README.md
+postman.json
