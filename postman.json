@@ -1,9 +1,10 @@
 {
   "info": {
-    "_postman_id": "adfa536c-acc3-412b-a23c-574a60eaf497",
+    "_postman_id": "9da6d809-4613-43b0-a4cd-65aa5eeed4f3",
     "name": "Software Dev Final Project",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "36669484"
+    "_exporter_id": "53937847",
+    "_collection_link": "https://go.postman.co/collection/53937847-9da6d809-4613-43b0-a4cd-65aa5eeed4f3?source=collection_link"
   },
   "item": [
     {
@@ -38,7 +39,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"{{$randomFullName}}\",\n    \"telephone\": \"0123456789\",\n    \"email\": \"{{$randomEmail}}\",\n    \"password\": \"12345678\",\n    \"role\": \"user\"\n}",
+              "raw": "{\n    \"name\": \"{{$randomFullName}}\",\n    \"telephone\": \"0123456789\",\n    \"email\": \"{{$randomEmail}}\",\n    \"password\": \"12345678\",\n    \"role\": \"user\",\n    \"privacyPolicyAccepted\": {{$randomBoolean}} // True will success registered\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -186,6 +187,95 @@
                 "api",
                 "auth",
                 "logout"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"{{$randomFullName}}\",\n    \"telephone\": \"0987654321\"\n    // \"yearsOfExperience\": 99999\n    // \"areaOfExpertise\": \"fish\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Root}}/api/auth/updateprofile",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "updateprofile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"TOKEN\", null);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Root}}/api/auth/deleteaccount",
+              "host": [
+                "{{Root}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "deleteaccount"
               ]
             }
           },
