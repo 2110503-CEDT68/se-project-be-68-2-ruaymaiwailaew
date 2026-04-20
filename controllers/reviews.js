@@ -6,10 +6,18 @@ exports.createReview = async (req, res, next) => {
 
         const dentist = await User.findById(req.params.dentistId);
 
-        if (!dentist || dentist.role !== 'dentist') {
+        if (!dentist || dentist.role !== 'dentist' || dentist.isDeleted) {
             return res.status(404).json({
                 success: false,
                 message: 'Dentist not found'
+            });
+        }
+
+        const user = await User.findById(req.user.id);
+        if (user.isDeleted) {
+            return res.status(400).json({
+                success: false,
+                message: 'Account has been deleted'
             });
         }
 
@@ -44,12 +52,23 @@ exports.getReviews = async (req, res, next) => {
     try {
         const reviews = await Review.find({
             dentist: req.params.dentistId
-        }).populate('user', 'name').populate('dentist', 'name');
+        }).populate({
+            path: 'user',
+            select: 'name isDeleted',
+            match: { isDeleted: false }
+        }).populate({
+            path: 'dentist',
+            select: 'name isDeleted',
+            match: { isDeleted: false }
+        });
+
+        // Filter out reviews from deleted users
+        const filteredReviews = reviews.filter(review => review.user !== null && review.dentist !== null);
 
         res.status(200).json({
             success: true,
-            count: reviews.length,
-            data: reviews
+            count: filteredReviews.length,
+            data: filteredReviews
         });
     } catch (err) {
         res.status(400).json({

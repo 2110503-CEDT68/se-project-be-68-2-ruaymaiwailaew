@@ -73,6 +73,12 @@ exports.login = async (req, res, next) => {
             message: "Invalid credentials"
         });
 
+        // Check if account is deleted
+        if (user.isDeleted) return res.status(400).json({
+            success: false,
+            message: "This account has been deleted"
+        });
+
         // Check matched password
         const isMatch = await user.matchPassword(password);
 
@@ -99,6 +105,14 @@ exports.me = async (req, res, next) => {
     // Find user by id
     const user = await User.findById(req.user.id);
 
+    // Check if account is deleted
+    if (user && user.isDeleted) {
+        return res.status(400).json({
+            success: false,
+            message: "This account has been deleted"
+        });
+    }
+
     res.status(200).json({
         success: true,
         data: user
@@ -118,4 +132,50 @@ exports.logout = async (req, res, next) => {
         success: true,
         data: {}
     });
+};
+
+// @desc    Delete account (soft delete)
+// @route   DELETE /auth/deleteAccount
+// @access  Private
+exports.deleteAccount = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        if (user.isDeleted) {
+            return res.status(400).json({
+                success: false,
+                message: "This account has already been deleted"
+            });
+        }
+
+        // Soft delete: set isDeleted flag and deletedAt timestamp
+        user.isDeleted = true;
+        user.deletedAt = new Date();
+        await user.save();
+
+        // Clear the authentication cookie and logout
+        res.cookie('token', 'none', {
+            expires: new Date(Date.now() + 10*1000),
+            httpOnly: true
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Account deleted successfully",
+            data: {}
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+        console.error(err.message);
+    }
 }

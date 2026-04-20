@@ -14,18 +14,23 @@ exports.getDentistAvailability = async (req, res, next) => {
     let query; 
     query = Booking.find().populate({
         path: 'dentist',
-        select: 'name yearsOfExperience areaOfExpertise'
+        select: 'name yearsOfExperience areaOfExpertise isDeleted',
+        match: { isDeleted: false }
     }).populate({
         path: 'user',
-        select: 'name email'
+        select: 'name email isDeleted',
+        match: { isDeleted: false }
     });
     try {
         const bookings = await query;
 
+        // Filter out bookings from deleted users
+        const filteredBookings = bookings.filter(booking => booking.user !== null && booking.dentist !== null);
+
         res.status(200).json({
             success: true,
-            count: bookings.length,
-            data: bookings
+            count: filteredBookings.length,
+            data: filteredBookings
         });
     } catch (err) {
         logError(err);
@@ -45,36 +50,45 @@ exports.getBookings = async (req, res, next) => {
     if (req.user.role === 'admin') {
         query = Booking.find().populate({
             path: 'dentist',
-            select: 'name yearsOfExperience areaOfExpertise'
+            select: 'name yearsOfExperience areaOfExpertise isDeleted',
+            match: { isDeleted: false }
         }).populate({
             path: 'user',
-            select: 'name email'
+            select: 'name email isDeleted',
+            match: { isDeleted: false }
         });
     } else if (req.user.role === 'user') {
         query = Booking.find({ user: req.user.id }).populate({
             path: 'dentist',
-            select: 'name yearsOfExperience areaOfExpertise'
+            select: 'name yearsOfExperience areaOfExpertise isDeleted',
+            match: { isDeleted: false }
         }).populate({
             path: 'user',
-            select: 'name email'
+            select: 'name email isDeleted',
+            match: { isDeleted: false }
         });
     } else if (req.user.role === 'dentist') {
         query = Booking.find({ dentist: req.user.id }).populate({
             path: 'dentist',
-            select: 'name yearsOfExperience areaOfExpertise'
+            select: 'name yearsOfExperience areaOfExpertise isDeleted',
+            match: { isDeleted: false }
         }).populate({
             path: 'user',
-            select: 'name email'
+            select: 'name email isDeleted',
+            match: { isDeleted: false }
         });
     }
 
     try {
         const bookings = await query;
+        
+        // Filter out bookings from deleted users
+        const filteredBookings = bookings.filter(booking => booking.user !== null && booking.dentist !== null);
 
         res.status(200).json({
             success: true,
-            count: bookings.length,
-            data: bookings
+            count: filteredBookings.length,
+            data: filteredBookings
         });
     } catch (err) {
         logError(err);
@@ -140,6 +154,15 @@ exports.getBooking = async (req, res, next) => {
 // @access  Private only user
 exports.createBooking = async (req, res, next) => {
     try {
+        // Check if user account is deleted
+        const user = await User.findById(req.user.id);
+        if (user.isDeleted) {
+            return res.status(400).json({
+                success: false,
+                message: 'Account has been deleted'
+            });
+        }
+
         const existedBooking = await Booking.findOne({ user: req.user.id });
 
         if (existedBooking) {
@@ -147,6 +170,15 @@ exports.createBooking = async (req, res, next) => {
         }
 
         const { bookingDate, dentist } = req.body;
+
+        // Check if dentist exists and is not deleted
+        const dentistUser = await User.findById(dentist);
+        if (!dentistUser || dentistUser.isDeleted) {
+            return res.status(400).json({
+                success: false,
+                message: 'Dentist is not available'
+            });
+        }
 
         const dentistBooking = await Booking.findOne({
             dentist,
