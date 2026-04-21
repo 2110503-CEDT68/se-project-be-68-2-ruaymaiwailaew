@@ -10,12 +10,19 @@ const mockRes = () => {
     return res;
 };
 
+// Helper: mock findById to return a value via .populate().populate() chain
+const mockFindById = (resolvedValue) => {
+    const inner = { populate: jest.fn().mockResolvedValue(resolvedValue) };
+    const outer = { populate: jest.fn().mockReturnValue(inner) };
+    Booking.findById.mockReturnValue(outer);
+};
+
 describe('deleteBooking', () => {
     afterEach(() => jest.clearAllMocks());
 
     // TC1: Booking not found → 404
     test('should return 404 if booking not found', async () => {
-        Booking.findById.mockResolvedValue(null);
+        mockFindById(null);
 
         const req = { params: { id: 'nonexistent_id' }, user: { id: 'u1', role: 'user' } };
         const res = mockRes();
@@ -30,11 +37,11 @@ describe('deleteBooking', () => {
     test('should allow admin to delete any booking', async () => {
         const fakeBooking = {
             _id: 'b1',
-            user: { toString: () => 'u1' },
-            dentist: { toString: () => 'd1' },
+            user: { _id: { toString: () => 'u1' } },
+            dentist: { _id: { toString: () => 'd1' } },
             deleteOne: jest.fn().mockResolvedValue({})
         };
-        Booking.findById.mockResolvedValue(fakeBooking);
+        mockFindById(fakeBooking);
 
         const req = { params: { id: 'b1' }, user: { id: 'admin1', role: 'admin' } };
         const res = mockRes();
@@ -50,11 +57,11 @@ describe('deleteBooking', () => {
     test('should allow user to delete their own booking', async () => {
         const fakeBooking = {
             _id: 'b1',
-            user: { toString: () => 'u1' },
-            dentist: { toString: () => 'd1' },
+            user: { _id: { toString: () => 'u1' } },
+            dentist: { _id: { toString: () => 'd1' } },
             deleteOne: jest.fn().mockResolvedValue({})
         };
-        Booking.findById.mockResolvedValue(fakeBooking);
+        mockFindById(fakeBooking);
 
         const req = { params: { id: 'b1' }, user: { id: 'u1', role: 'user' } };
         const res = mockRes();
@@ -69,11 +76,11 @@ describe('deleteBooking', () => {
     test('should return 403 if user tries to delete another user booking', async () => {
         const fakeBooking = {
             _id: 'b1',
-            user: { toString: () => 'u2' },
-            dentist: { toString: () => 'd1' },
+            user: { _id: { toString: () => 'u2' } },
+            dentist: { _id: { toString: () => 'd1' } },
             deleteOne: jest.fn()
         };
-        Booking.findById.mockResolvedValue(fakeBooking);
+        mockFindById(fakeBooking);
 
         const req = { params: { id: 'b1' }, user: { id: 'u1', role: 'user' } };
         const res = mockRes();
@@ -88,11 +95,11 @@ describe('deleteBooking', () => {
     test('should allow dentist to delete their own booking', async () => {
         const fakeBooking = {
             _id: 'b1',
-            user: { toString: () => 'u1' },
-            dentist: { toString: () => 'd1' },
+            user: { _id: { toString: () => 'u1' } },
+            dentist: { _id: { toString: () => 'd1' } },
             deleteOne: jest.fn().mockResolvedValue({})
         };
-        Booking.findById.mockResolvedValue(fakeBooking);
+        mockFindById(fakeBooking);
 
         const req = { params: { id: 'b1' }, user: { id: 'd1', role: 'dentist' } };
         const res = mockRes();
@@ -107,11 +114,11 @@ describe('deleteBooking', () => {
     test('should return 403 if dentist tries to delete another dentist booking', async () => {
         const fakeBooking = {
             _id: 'b1',
-            user: { toString: () => 'u1' },
-            dentist: { toString: () => 'd2' },
+            user: { _id: { toString: () => 'u1' } },
+            dentist: { _id: { toString: () => 'd2' } },
             deleteOne: jest.fn()
         };
-        Booking.findById.mockResolvedValue(fakeBooking);
+        mockFindById(fakeBooking);
 
         const req = { params: { id: 'b1' }, user: { id: 'd1', role: 'dentist' } };
         const res = mockRes();
@@ -122,15 +129,15 @@ describe('deleteBooking', () => {
         expect(res.status).toHaveBeenCalledWith(403);
     });
 
-    // TC7: Unknow role → 403
+    // TC7: Unknown role → 403
     test('should return 403 for unknown role', async () => {
         const fakeBooking = {
             _id: 'b1',
-            user: { toString: () => 'u1' },
-            dentist: { toString: () => 'd1' },
+            user: { _id: { toString: () => 'u1' } },
+            dentist: { _id: { toString: () => 'd1' } },
             deleteOne: jest.fn()
         };
-        Booking.findById.mockResolvedValue(fakeBooking);
+        mockFindById(fakeBooking);
 
         const req = { params: { id: 'b1' }, user: { id: 'x1', role: 'unknown' } };
         const res = mockRes();
@@ -143,7 +150,9 @@ describe('deleteBooking', () => {
 
     // TC8: Database error → 500
     test('should return 500 if database throws error', async () => {
-        Booking.findById.mockRejectedValue(new Error('DB error'));
+        const inner = { populate: jest.fn().mockRejectedValue(new Error('DB error')) };
+        const outer = { populate: jest.fn().mockReturnValue(inner) };
+        Booking.findById.mockReturnValue(outer);
 
         const req = { params: { id: 'b1' }, user: { id: 'u1', role: 'user' } };
         const res = mockRes();

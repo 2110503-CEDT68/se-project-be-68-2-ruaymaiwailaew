@@ -1,5 +1,10 @@
 const Booking = require('../models/Booking');
 const User = require('../models/User');
+const {
+    sendBookingCreatedNotification,
+    sendBookingUpdatedNotification,
+    sendBookingDeletedNotification
+} = require('../services/notificationService');
 
 const logError = (err) => {
     if (process.env.NODE_ENV !== 'test') {
@@ -208,6 +213,9 @@ exports.createBooking = async (req, res, next) => {
             dentist
         });
 
+        // Send notification email to dentist
+        sendBookingCreatedNotification(dentistUser, user, booking);
+
         res.status(201).json({
             success: true,
             data: booking
@@ -226,7 +234,13 @@ exports.createBooking = async (req, res, next) => {
 // @access  Private
 exports.updateBooking = async (req, res, next) => {
     try {
-        let booking = await Booking.findById(req.params.id);
+        let booking = await Booking.findById(req.params.id).populate({
+            path: 'dentist',
+            select: 'name email yearsOfExperience areaOfExpertise'
+        }).populate({
+            path: 'user',
+            select: 'name email telephone'
+        });
 
         if (!booking) {
             return res.status(404).json({ success: false, message: `No booking with the id of ${req.params.id}` });
@@ -235,18 +249,33 @@ exports.updateBooking = async (req, res, next) => {
         if (req.user.role === 'admin') {
             // Admin can update any booking
         } else if (req.user.role === 'user') {
-            if (booking.user.toString() !== req.user.id) {
+            if (booking.user._id.toString() !== req.user.id) {
                 return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to update this booking` });
             }
         } else if (req.user.role === 'dentist') {
-            if (booking.dentist.toString() !== req.user.id) {
+            if (booking.dentist._id.toString() !== req.user.id) {
                 return res.status(403).json({ success: false, message: `Dentist ${req.user.id} is not authorized to update this booking` });
             }
         } else {
             return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to update this booking` });
         }
 
-        booking = await Booking.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        booking = await Booking.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }).populate({
+            path: 'dentist',
+            select: 'name email yearsOfExperience areaOfExpertise'
+        }).populate({
+            path: 'user',
+            select: 'name email telephone'
+        });
+
+        // Send notification email to the other party
+        if (req.user.role === 'user' || req.user.role === 'admin') {
+            // User or admin updated the booking, notify the dentist
+            sendBookingUpdatedNotification(booking.dentist, booking, booking.user, 'user');
+        } else if (req.user.role === 'dentist') {
+            // Dentist updated the booking, notify the user
+            sendBookingUpdatedNotification(booking.user, booking, booking.dentist, 'dentist');
+        }
 
         res.status(200).json({
             success: true,
@@ -267,7 +296,13 @@ exports.updateBooking = async (req, res, next) => {
 // @access  Private
 exports.deleteBooking = async (req, res, next) => {
     try {
-        const booking = await Booking.findById(req.params.id);
+        const booking = await Booking.findById(req.params.id).populate({
+            path: 'dentist',
+            select: 'name email yearsOfExperience areaOfExpertise'
+        }).populate({
+            path: 'user',
+            select: 'name email telephone'
+        });
 
         if (!booking) {
             return res.status(404).json({ success: false, message: `Booking not found` });
@@ -276,11 +311,11 @@ exports.deleteBooking = async (req, res, next) => {
         if (req.user.role === 'admin') {
             // Admin can delete any booking
         } else if (req.user.role === 'user') {
-            if (booking.user.toString() !== req.user.id) {
+            if (booking.user._id.toString() !== req.user.id) {
                 return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to delete this booking` });
             }
         } else if (req.user.role === 'dentist') {
-            if (booking.dentist.toString() !== req.user.id) {
+            if (booking.dentist._id.toString() !== req.user.id) {
                 return res.status(403).json({ success: false, message: `Dentist ${req.user.id} is not authorized to delete this booking` });
             }
         } else {
@@ -288,6 +323,15 @@ exports.deleteBooking = async (req, res, next) => {
         }
 
         await booking.deleteOne();
+
+        // Send notification email to the other party
+        if (req.user.role === 'user' || req.user.role === 'admin') {
+            // User or admin deleted the booking, notify the dentist
+            sendBookingDeletedNotification(booking.dentist, booking, booking.user, 'user');
+        } else if (req.user.role === 'dentist') {
+            // Dentist deleted the booking, notify the user
+            sendBookingDeletedNotification(booking.user, booking, booking.dentist, 'dentist');
+        }
 
         res.status(200).json({
             success: true,
