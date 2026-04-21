@@ -37,7 +37,7 @@ exports.sendBookingCreatedNotification = async (dentist, user, booking) => {
         });
 
         await resend.emails.send({
-            from: 'noreply@dental-clinic.com',
+            from: 'noreply@ruaydentist.65737776.xyz',
             to: dentist.email,
             subject: 'มีการจองนัดหมอใหม่',
             html: `
@@ -98,7 +98,7 @@ exports.sendBookingUpdatedNotification = async (recipient, booking, otherUser, r
             : `${otherUser.name} ได้แก้ไขนัดหมอแล้ว`;
 
         await resend.emails.send({
-            from: 'noreply@dental-clinic.com',
+            from: 'noreply@ruaydentist.65737776.xyz',
             to: recipient.email,
             subject: subject,
             html: `
@@ -157,7 +157,7 @@ exports.sendBookingDeletedNotification = async (recipient, booking, otherUser, r
             : `${otherUser.name} ได้ยกเลิกนัดหมอแล้ว`;
 
         await resend.emails.send({
-            from: 'noreply@dental-clinic.com',
+            from: 'noreply@ruaydentist.65737776.xyz',
             to: recipient.email,
             subject: subject,
             html: `
