@@ -3,10 +3,10 @@ name: Github CI
 on:
   push:
     branches:
-      - main
+      [main, feature/docker-compose]
   pull_request:
     branches:
-      - main
+      [main]
 
 env:
   IMAGE_NAME: g26-se-project-be-68-2
