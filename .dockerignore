@@ -14,3 +14,4 @@ config/config.env
 Dockerfile
 README.md
 postman.json
+docker-compose.yml
