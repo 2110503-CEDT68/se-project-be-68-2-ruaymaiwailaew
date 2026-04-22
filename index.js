@@ -25,6 +25,20 @@ const limiter = rateLimit({
 
 const app = express();
 
+const trustProxySetting = process.env.TRUST_PROXY;
+if (trustProxySetting !== undefined && trustProxySetting !== '') {
+    const normalized = trustProxySetting.trim().toLowerCase();
+    if (normalized === 'true') {
+        app.set('trust proxy', true);
+    } else if (normalized === 'false') {
+        app.set('trust proxy', false);
+    } else if (!Number.isNaN(Number(normalized))) {
+        app.set('trust proxy', Number(normalized));
+    } else {
+        app.set('trust proxy', trustProxySetting);
+    }
+}
+
 // Ensure DB connected for every Serverless request
 app.use(async (req, res, next) => {
     try {
@@ -36,7 +50,6 @@ app.use(async (req, res, next) => {
     }
 });
 
-// app.set('trust proxy', 1);
 app.set('query parser', 'extended');
 
 app.use(express.json());
