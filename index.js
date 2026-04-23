@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/database');
 const cookieParser = require('cookie-parser');
+const swaggerUi = require('swagger-ui-express');
 
 // const { setServers } = require("node:dns/promises");
 // setServers(["1.1.1.1", "8.8.8.8"]);
@@ -17,6 +18,8 @@ const cors = require('cors');
 // Read env file when running in serverless mode.
 dotenv.config({ path: './config/config.env' });
 
+const openApiDocument = require('./docs/openapi');
+
 // Config rate limiting
 const limiter = rateLimit({
     windowMs: 10*60*1000,
@@ -24,6 +27,40 @@ const limiter = rateLimit({
 });
 
 const app = express();
+
+const swaggerUser = process.env.SWAGGER_USERNAME;
+const swaggerPass = process.env.SWAGGER_PASSWORD;
+
+const protectSwaggerDocs = (req, res, next) => {
+    if (!swaggerUser || !swaggerPass) {
+        return next();
+    }
+
+    const authHeader = req.headers.authorization || '';
+    if (!authHeader.startsWith('Basic ')) {
+        res.set('WWW-Authenticate', 'Basic realm="Swagger Docs"');
+        return res.status(401).send('Authentication required');
+    }
+
+    const base64Credentials = authHeader.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('utf8');
+    const separatorIndex = credentials.indexOf(':');
+
+    if (separatorIndex < 0) {
+        res.set('WWW-Authenticate', 'Basic realm="Swagger Docs"');
+        return res.status(401).send('Invalid authentication format');
+    }
+
+    const username = credentials.slice(0, separatorIndex);
+    const password = credentials.slice(separatorIndex + 1);
+
+    if (username !== swaggerUser || password !== swaggerPass) {
+        res.set('WWW-Authenticate', 'Basic realm="Swagger Docs"');
+        return res.status(401).send('Invalid credentials');
+    }
+
+    return next();
+};
 
 const trustProxySetting = process.env.TRUST_PROXY;
 if (trustProxySetting !== undefined && trustProxySetting !== '') {
@@ -62,6 +99,11 @@ app.use(xss());
 app.use(limiter);
 app.use(hpp());
 app.use(cors());
+
+app.get('/api-docs.json', protectSwaggerDocs, (req, res) => {
+    res.json(openApiDocument);
+});
+app.use('/api-docs', protectSwaggerDocs, swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
 // Route files
 const auth = require('./routes/auth');
