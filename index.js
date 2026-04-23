@@ -10,7 +10,8 @@ const swaggerUi = require('swagger-ui-express');
 // Security require
 const mongoSanitize = require('@exortek/express-mongo-sanitize');
 const helmet = require('helmet');
-const {xss} = require('express-xss-sanitizer');
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
 const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
 const cors = require('cors');
@@ -27,6 +28,8 @@ const limiter = rateLimit({
 });
 
 const app = express();
+const purifyWindow = new JSDOM('').window;
+const DOMPurify = createDOMPurify(purifyWindow);
 
 const swaggerUser = process.env.SWAGGER_USERNAME;
 const swaggerPass = process.env.SWAGGER_PASSWORD;
@@ -92,10 +95,39 @@ app.set('query parser', 'extended');
 app.use(express.json());
 app.use(cookieParser());
 
+const sanitizeInput = (value) => {
+    if (typeof value === 'string') {
+        return DOMPurify.sanitize(value, {
+            USE_PROFILES: { html: true },
+            FORBID_TAGS: ['script', 'style'],
+            FORBID_ATTR: ['onerror', 'onload', 'onclick']
+        });
+    }
+
+    if (Array.isArray(value)) {
+        return value.map((item) => sanitizeInput(item));
+    }
+
+    if (value && typeof value === 'object') {
+        for (const key of Object.keys(value)) {
+            value[key] = sanitizeInput(value[key]);
+        }
+    }
+
+    return value;
+};
+
+const sanitizeRequest = (req, res, next) => {
+    req.body = sanitizeInput(req.body);
+    req.query = sanitizeInput(req.query);
+    req.params = sanitizeInput(req.params);
+    next();
+};
+
 // Security used
 app.use(mongoSanitize());
 app.use(helmet());
-app.use(xss());
+app.use(sanitizeRequest);
 app.use(limiter);
 app.use(hpp());
 app.use(cors());
