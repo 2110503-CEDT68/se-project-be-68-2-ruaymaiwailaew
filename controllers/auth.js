@@ -180,11 +180,20 @@ exports.logout = async (req, res, next) => {
 };
 
 // @desc    Delete account (soft delete)
-// @route   DELETE /auth/deleteAccount
+// @route   POST /api/users/delete-account
 // @access  Private
 exports.deleteAccount = async (req, res, next) => {
     try {
-        const user = await User.findById(req.user.id);
+        const { password } = req.body;
+
+        if (!password) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide your password to confirm account deletion"
+            });
+        }
+
+        const user = await User.findById(req.user.id).select('+password');
 
         if (!user) {
             return res.status(404).json({
@@ -205,6 +214,14 @@ exports.deleteAccount = async (req, res, next) => {
         user.deletedAt = new Date();
         await user.save();
 
+        const isMatch = await user.matchPassword(password);
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: "Incorrect password"
+            });
+        }
+
         // Clear the authentication cookie and logout
         res.cookie('token', 'none', {
             expires: new Date(0),
@@ -217,11 +234,11 @@ exports.deleteAccount = async (req, res, next) => {
             data: {}
         });
     } catch (err) {
+        console.error(err);
         res.status(500).json({
             success: false,
             message: err.message
         });
-        console.error(err.message);
     }
 };
 
