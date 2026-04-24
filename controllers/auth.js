@@ -180,7 +180,7 @@ exports.logout = async (req, res, next) => {
 };
 
 // @desc    Delete account (soft delete)
-// @route   POST /api/users/delete-account
+// @route   POST /auth/deleteaccount
 // @access  Private
 exports.deleteAccount = async (req, res, next) => {
     try {
