@@ -380,3 +380,23 @@ exports.updateProfile = async (req, res, next) => {
     }
 };
 
+// @desc    View all user
+// @route   GET /api/auth/getusers
+// @access  Private (Admin Only)
+exports.getUsers = async (req, res, next) => {
+    try {
+        const users = await User.find({ role: { $in: ['user', 'dentist'] }, isDeleted: false }).select('-password');
+
+        res.status(200).json({
+            success: true,
+            count: users.length,
+            data: users
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            success: false,
+            message: "Cannot retrieve users and dentists"
+        });
+    }
+};
