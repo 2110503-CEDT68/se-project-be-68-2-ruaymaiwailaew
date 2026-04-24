@@ -8,7 +8,7 @@ const {
 
 const logError = (err) => {
     if (process.env.NODE_ENV !== 'test') {
-        console.log(err);
+        console.error(err);
     }
 };
 
@@ -128,7 +128,7 @@ exports.getBooking = async (req, res, next) => {
                 });
             }
         } else if (req.user.role === 'dentist') {
-            if (booking.dentist.toString() !== req.user.id) {
+            if (booking.dentist._id.toString() !== req.user.id) {
                 return res.status(403).json({
                     success: false,
                     message: 'Not authorized to access this booking'
@@ -178,10 +178,17 @@ exports.createBooking = async (req, res, next) => {
         const existedBooking = await Booking.findOne({ user: req.user.id });
 
         if (existedBooking) {
-            return res.status(400).json({ success: false, message: `The user with ID ${req.user.id} has already made booking` });
+            return res.status(400).json({ success: false, message: `You already have an existing booking` });
         }
 
         const { bookingDate, dentist } = req.body;
+
+        if (!bookingDate || !dentist) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide booking date and dentist'
+            });
+        }
 
         // Check if dentist exists and is not deleted or banned
         const dentistUser = await User.findById(dentist);
@@ -261,11 +268,26 @@ exports.updateBooking = async (req, res, next) => {
         }
 
         const {bookingDate, dentist} = req.body;
+        const targetDate = bookingDate || booking.bookingDate;
 
-        booking = await Booking.findByIdAndUpdate(req.params.id, {
-            bookingDate,
-            dentist
-        }, { new: true, runValidators: true }).populate({
+        if (req.body.dentist || req.body.bookingDate) {
+            const conflict = await Booking.findOne({
+                _id: { $ne: req.params.id },
+                dentist: req.body.dentist || booking.dentist._id,
+                bookingDate: { 
+                    $gte: new Date(new Date(targetDate).setHours(0, 0, 0, 0)),
+                    $lte: new Date(new Date(targetDate).setHours(23, 59, 59, 999)) 
+                }
+            });
+
+            if (conflict) return res.status(400).json({success: false, message: `The dentist is not available on ${new Date(bookingDate).toDateString()}`});
+        }
+
+        const updateData = {};
+        if (bookingDate) updateData.bookingDate = bookingDate;
+        if (dentist) updateData.dentist = dentist;
+
+        booking = await Booking.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true }).populate({
             path: 'dentist',
             select: 'name email yearsOfExperience areaOfExpertise'
         }).populate({
