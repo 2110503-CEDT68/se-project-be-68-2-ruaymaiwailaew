@@ -13,6 +13,8 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 
   backend:
     image: aimlxv/g26-se-project-be-68-2:latest
@@ -31,6 +33,8 @@ services:
       JWT_EXPIRE: 30d
       JWT_COOKIE_EXPIRE: 30
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 
   watchtower:
     image: nickfedor/watchtower:latest
