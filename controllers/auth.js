@@ -168,6 +168,7 @@ exports.logout = async (req, res, next) => {
 
     res.status(200).json({
         success: true,
+        message: "Logged out successfully",
         data: {}
     });
 };
@@ -187,7 +188,7 @@ exports.deleteAccount = async (req, res, next) => {
         }
 
         if (user.isDeleted) {
-            return res.status(400).json({
+            return res.status(410).json({
                 success: false,
                 message: "This account has already been deleted"
             });
@@ -200,7 +201,7 @@ exports.deleteAccount = async (req, res, next) => {
 
         // Clear the authentication cookie and logout
         res.cookie('token', 'none', {
-            expires: new Date(Date.now() + 10*1000),
+            expires: new Date(0),
             httpOnly: true
         });
 
