@@ -356,13 +356,37 @@ exports.unbanUser = async (req, res, next) => {
 exports.updateProfile = async (req, res, next) => {
     try {
         // Get fields to update (allow only specific fields)
-        const {name, telephone, areaOfExpertise, yearsOfExperience} = req.body;
+        const {name, telephone, areaOfExpertise, yearsOfExperience, password} = req.body;
+
+        if (!password) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide your password to confirm"
+            });
+        }
 
         // Validate input
         if (!name && !telephone && !areaOfExpertise && yearsOfExperience === undefined) {
             return res.status(400).json({
                 success: false,
                 message: "Please provide at least one field to update"
+            });
+        }
+
+        const user = await User.findById(req.user.id).select('+password');
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const isMatch = await user.matchPassword(password);
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: "Incorrect password"
             });
         }
 
@@ -374,7 +398,7 @@ exports.updateProfile = async (req, res, next) => {
         if (yearsOfExperience !== undefined) updateData.yearsOfExperience = yearsOfExperience;
 
         // Update user
-        const user = await User.findByIdAndUpdate(
+        const updatedUser = await User.findByIdAndUpdate(
             req.user.id,
             updateData,
             {
@@ -385,15 +409,15 @@ exports.updateProfile = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            data: user,
+            data: updatedUser,
             message: "Profile updated successfully"
         });
     } catch (err) {
-        res.status(400).json({
+        console.error(err);
+        res.status(500).json({
             success: false,
             message: err.message
         });
-        console.error(err.message);
     }
 };
 
