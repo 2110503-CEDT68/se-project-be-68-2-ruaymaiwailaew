@@ -260,7 +260,12 @@ exports.updateBooking = async (req, res, next) => {
             return res.status(403).json({ success: false, message: `User ${req.user.id} is not authorized to update this booking` });
         }
 
-        booking = await Booking.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }).populate({
+        const {bookingDate, dentist} = req.body;
+
+        booking = await Booking.findByIdAndUpdate(req.params.id, {
+            bookingDate,
+            dentist
+        }, { new: true, runValidators: true }).populate({
             path: 'dentist',
             select: 'name email yearsOfExperience areaOfExpertise'
         }).populate({
