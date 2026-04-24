@@ -12,6 +12,10 @@ This project is final project in Software Development Practice class
 - The system shall allow the admin to edit any bookings.
 - The system shall allow the admin to delete any bookings.
 
+## API Documentation (Swagger / OpenAPI )
+- Swagger UI: `${BASE_URL}/api-docs`
+-- example `http://localhost:5003/api-docs`
+
 ## Getting the Source Code
 ### Prerequisites
 Make sure you have the following installed on your machine:
