@@ -136,9 +136,16 @@ exports.me = async (req, res, next) => {
         });
     }
 
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: "No user found with this id"
+        });
+    }
+
     // Check if account is banned
-    if (user && user.isBanned) {
-        return res.status(400).json({
+    if (user.isBanned) {
+        return res.status(403).json({
             success: false,
             message: `This account has been banned${user.banReason ? ': ' + user.banReason : ''}`
         });
