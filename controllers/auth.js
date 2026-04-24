@@ -29,7 +29,7 @@ const sendTokenResponse = (user, statusCode, res) => {
 exports.register = async (req, res, next) => {
     try {
         // Get body request
-        const {name, telephone, email, password, role, privacyPolicyAccepted} = req.body;
+        const {name, telephone, email, password, role, privacyPolicyAccepted, yearsOfExperience, areaOfExpertise} = req.body;
 
         // Validate privacy policy acceptance
         if (!privacyPolicyAccepted) {
@@ -49,15 +49,13 @@ exports.register = async (req, res, next) => {
         }
 
         // Register
-        const user = await User.create({
-            name,
-            telephone,
-            email,
-            password,
-            role,
-            privacyPolicyAccepted
-        });
+        const userData = {
+            name, telephone, email, password, role, privacyPolicyAccepted,
+            ...(role === 'dentist' && { yearsOfExperience, areaOfExpertise })
+        };
 
+        const user = await User.create(userData);
+        
         sendTokenResponse(user, 201, res);
     }catch (err) {
         res.status(400).json({
