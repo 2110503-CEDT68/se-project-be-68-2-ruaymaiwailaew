@@ -12,7 +12,6 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     depends_on:
       - backend
-      - mongo
     restart: unless-stopped
 
   backend:
@@ -27,24 +26,22 @@ services:
       SWAGGER_BASE_URL: ${SWAGGER_BASE_URL}
       SWAGGER_USERNAME: ${SWAGGER_USERNAME}
       SWAGGER_PASSWORD: ${SWAGGER_PASSWORD}
-      MONGO_URL: mongodb://${DB_USER}:${DB_PASSWORD}@mongo:27017/${DB_NAME}?authSource=admin
+      MONGO_URL: ${MONGO_URL}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRE: 30d
       JWT_COOKIE_EXPIRE: 30
-    depends_on:
-      - mongo
     restart: unless-stopped
 
-  mongo:
-    image: mongo:8
-    container_name: dentist-db
-    ports:
-      - "27018:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
+  watchtower:
+    image: nickfedor/watchtower:latest
+    container_name: watchtower
     volumes:
-      - mongo_data:/data/db
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --label-enable --cleanup --http-api-update
+    environment:
+      - WATCHTOWER_HTTP_API_TOKEN=${WATCHTOWER_TOKEN}
+    ports:
+      - "127.0.0.1:8080:8080" 
     restart: unless-stopped
 
 volumes:
