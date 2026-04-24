@@ -39,6 +39,15 @@ exports.register = async (req, res, next) => {
             });
         }
 
+        // Check if email already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({
+                success: false,
+                message: "Email already in use"
+            });
+        }
+
         // Register
         const user = await User.create({
             name,
