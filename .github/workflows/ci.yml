@@ -85,6 +85,6 @@ jobs:
     steps:
       - name: Send Webhook via Cloudflare Tunnel
         run: |
-          curl -X GET \
+          curl -X POST \
           -H "Authorization: Bearer ${{ secrets.WATCHTOWER_TOKEN }}" \
           "${{ secrets.WEBHOOK_URL }}"
