@@ -81,22 +81,23 @@ exports.login = async (req, res, next) => {
         });
 
         // Find user in database
+        email.toLowerCase();
         const user = await User.findOne({email}).select('+password');
 
         // Don't find user in database
-        if (!user) return res.status(400).json({
+        if (!user) return res.status(401).json({
             success: false,
             message: "Invalid credentials"
         });
 
         // Check if account is deleted
-        if (user.isDeleted) return res.status(400).json({
+        if (user.isDeleted) return res.status(403).json({
             success: false,
             message: "This account has been deleted"
         });
 
         // Check if account is banned
-        if (user.isBanned) return res.status(400).json({
+        if (user.isBanned) return res.status(403).json({
             success: false,
             message: `This account has been banned${user.banReason ? ': ' + user.banReason : ''}`
         });
@@ -112,7 +113,7 @@ exports.login = async (req, res, next) => {
 
         sendTokenResponse(user, 200, res);
     }catch (err) {
-        res.status(400).json({
+        res.status(500).json({
             success: false,
             message: err.message
         });
