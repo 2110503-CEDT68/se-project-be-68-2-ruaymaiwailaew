@@ -1,7 +1,7 @@
 const express = require('express');
 
 // Controller file
-const {register, login, me, logout, updateProfile, deleteAccount, banUser, unbanUser} = require('../controllers/auth');
+const {register, login, me, logout, updateProfile, deleteAccount, banUser, unbanUser, getUsers} = require('../controllers/auth');
 
 // Router
 const router = express.Router();
@@ -18,5 +18,6 @@ router.get('/logout', protect, logout);
 router.delete('/deleteaccount', protect, deleteAccount);
 router.post('/ban', protect, authorize('admin'), banUser);
 router.post('/unban', protect, authorize('admin'), unbanUser);
+router.get('/getusers', protect, authorize('admin'), getUsers)
 
 module.exports = router;

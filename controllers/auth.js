@@ -29,7 +29,7 @@ const sendTokenResponse = (user, statusCode, res) => {
 exports.register = async (req, res, next) => {
     try {
         // Get body request
-        const {name, telephone, email, password, role, privacyPolicyAccepted} = req.body;
+        const {name, telephone, email, password, role, privacyPolicyAccepted, yearsOfExperience, areaOfExpertise} = req.body;
 
         // Validate privacy policy acceptance
         if (!privacyPolicyAccepted) {
@@ -39,16 +39,29 @@ exports.register = async (req, res, next) => {
             });
         }
 
-        // Register
-        const user = await User.create({
-            name,
-            telephone,
-            email,
-            password,
-            role,
-            privacyPolicyAccepted
-        });
+        // Check if email already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            if (existingUser.isDeleted) {
+                return res.status(409).json({
+                    success: false,
+                    message: "This email was previously registered and deleted. Please contact support to reactivate."
+                });
+            }
+            return res.status(409).json({
+                success: false,
+                message: "Email already in use"
+            });
+        }
 
+        // Register
+        const userData = {
+            name, telephone, email, password, role, privacyPolicyAccepted,
+            ...(role === 'dentist' && { yearsOfExperience, areaOfExpertise })
+        };
+
+        const user = await User.create(userData);
+        
         sendTokenResponse(user, 201, res);
     }catch (err) {
         res.status(400).json({
@@ -74,22 +87,23 @@ exports.login = async (req, res, next) => {
         });
 
         // Find user in database
+        email.toLowerCase();
         const user = await User.findOne({email}).select('+password');
 
         // Don't find user in database
-        if (!user) return res.status(400).json({
+        if (!user) return res.status(401).json({
             success: false,
             message: "Invalid credentials"
         });
 
         // Check if account is deleted
-        if (user.isDeleted) return res.status(400).json({
+        if (user.isDeleted) return res.status(403).json({
             success: false,
             message: "This account has been deleted"
         });
 
         // Check if account is banned
-        if (user.isBanned) return res.status(400).json({
+        if (user.isBanned) return res.status(403).json({
             success: false,
             message: `This account has been banned${user.banReason ? ': ' + user.banReason : ''}`
         });
@@ -105,7 +119,7 @@ exports.login = async (req, res, next) => {
 
         sendTokenResponse(user, 200, res);
     }catch (err) {
-        res.status(400).json({
+        res.status(500).json({
             success: false,
             message: err.message
         });
@@ -128,9 +142,16 @@ exports.me = async (req, res, next) => {
         });
     }
 
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: "No user found with this id"
+        });
+    }
+
     // Check if account is banned
-    if (user && user.isBanned) {
-        return res.status(400).json({
+    if (user.isBanned) {
+        return res.status(403).json({
             success: false,
             message: `This account has been banned${user.banReason ? ': ' + user.banReason : ''}`
         });
@@ -153,6 +174,7 @@ exports.logout = async (req, res, next) => {
 
     res.status(200).json({
         success: true,
+        message: "Logged out successfully",
         data: {}
     });
 };
@@ -172,7 +194,7 @@ exports.deleteAccount = async (req, res, next) => {
         }
 
         if (user.isDeleted) {
-            return res.status(400).json({
+            return res.status(410).json({
                 success: false,
                 message: "This account has already been deleted"
             });
@@ -185,7 +207,7 @@ exports.deleteAccount = async (req, res, next) => {
 
         // Clear the authentication cookie and logout
         res.cookie('token', 'none', {
-            expires: new Date(Date.now() + 10*1000),
+            expires: new Date(0),
             httpOnly: true
         });
 
@@ -355,5 +377,26 @@ exports.updateProfile = async (req, res, next) => {
             message: err.message
         });
         console.error(err.message);
+    }
+};
+
+// @desc    View all user
+// @route   GET /api/auth/getusers
+// @access  Private (Admin Only)
+exports.getUsers = async (req, res, next) => {
+    try {
+        const users = await User.find({ role: { $in: ['user', 'dentist'] }, isDeleted: false }).select('-password');
+
+        res.status(200).json({
+            success: true,
+            count: users.length,
+            data: users
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            success: false,
+            message: "Cannot retrieve users and dentists"
+        });
     }
 };
