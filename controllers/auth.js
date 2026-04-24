@@ -42,6 +42,12 @@ exports.register = async (req, res, next) => {
         // Check if email already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
+            if (existingUser.isDeleted) {
+                return res.status(409).json({
+                    success: false,
+                    message: "This email was previously registered and deleted. Please contact support to reactivate."
+                });
+            }
             return res.status(409).json({
                 success: false,
                 message: "Email already in use"
