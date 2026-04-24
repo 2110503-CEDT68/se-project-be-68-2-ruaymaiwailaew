@@ -3,7 +3,7 @@ name: Github CI
 on:
   push:
     branches:
-      [main]
+      [main, cd/*]
   pull_request:
     branches:
       [main]
@@ -75,3 +75,16 @@ jobs:
           docker tag $IMAGE_NAME:${{ github.sha }} $FULL:latest
           docker push $FULL:${{ github.sha }}
           docker push $FULL:latest
+
+  deploy:
+    name: Send Deployment signal
+    runs-on: ubuntu-latest
+    needs: docker-build 
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Send Webhook via Cloudflare Tunnel
+        run: |
+          curl -X GET \
+          -H "Authorization: Bearer ${{ secrets.WATCHTOWER_TOKEN }}" \
+          "${{ secrets.WEBHOOK_URL }}"
