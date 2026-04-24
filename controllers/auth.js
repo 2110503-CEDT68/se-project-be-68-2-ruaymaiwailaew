@@ -379,3 +379,4 @@ exports.updateProfile = async (req, res, next) => {
         console.error(err.message);
     }
 };
+
