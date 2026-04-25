@@ -15,7 +15,7 @@ router.post('/login', login);
 router.get('/me', protect, me);
 router.put('/updateprofile', protect, updateProfile);
 router.get('/logout', protect, logout);
-router.delete('/deleteaccount', protect, deleteAccount);
+router.post('/deleteaccount', protect, deleteAccount);
 router.post('/ban', protect, authorize('admin'), banUser);
 router.post('/unban', protect, authorize('admin'), unbanUser);
 router.get('/getusers', protect, authorize('admin'), getUsers)
