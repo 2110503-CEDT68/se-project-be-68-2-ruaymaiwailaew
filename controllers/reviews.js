@@ -15,14 +15,14 @@ exports.createReview = async (req, res, next) => {
 
         const user = await User.findById(req.user.id);
         if (user.isDeleted) {
-            return res.status(400).json({
+            return res.status(403).json({
                 success: false,
                 message: 'Account has been deleted'
             });
         }
 
         if (user.isBanned) {
-            return res.status(400).json({
+            return res.status(403).json({
                 success: false,
                 message: 'Account has been banned'
             });
@@ -31,7 +31,7 @@ exports.createReview = async (req, res, next) => {
         const alreadyReviewed = await Review.findOne({ dentist: req.params.dentistId, user: req.user.id });
 
         if (alreadyReviewed) {
-            return res.status(400).json({
+            return res.status(403).json({
                 success: false,
                 message: 'User already reviewed this dentist'
             });
@@ -78,7 +78,7 @@ exports.getReviews = async (req, res, next) => {
             data: filteredReviews
         });
     } catch (err) {
-        res.status(400).json({
+        res.status(500).json({
             success: false,
             message: 'Cannot get review'
         });
