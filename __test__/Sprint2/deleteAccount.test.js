@@ -3,7 +3,7 @@ jest.mock('../../models/User', () => ({
 }));
 
 const User = require('../../models/User');
-const { deleteAccount } = require('../../controllers/account');
+const { deleteAccount } = require('../../controllers/auth');
 
 const mockResponse = () => {
   const res = {};
@@ -24,9 +24,9 @@ describe('US2-3 Delete Account - deleteAccount Unit Tests', () => {
     req = {
       user: {
         id: 'user123',
-        role: 'user'
+        role: 'user',
       },
-      body: {}
+      body: {},
     };
 
     res = mockResponse();
@@ -35,7 +35,7 @@ describe('US2-3 Delete Account - deleteAccount Unit Tests', () => {
 
   test('TC1: should delete account successfully when user provides correct password', async () => {
     req.body = {
-      password: 'correctpassword'
+      password: 'correctpassword',
     };
 
     const mockUser = {
@@ -43,7 +43,7 @@ describe('US2-3 Delete Account - deleteAccount Unit Tests', () => {
       isDeleted: false,
       deletedAt: null,
       matchPassword: jest.fn().mockResolvedValue(true),
-      save: jest.fn().mockResolvedValue(true)
+      save: jest.fn().mockResolvedValue(true),
     };
 
     const selectMock = jest.fn().mockResolvedValue(mockUser);
@@ -53,10 +53,8 @@ describe('US2-3 Delete Account - deleteAccount Unit Tests', () => {
 
     expect(User.findById).toHaveBeenCalledWith('user123');
     expect(selectMock).toHaveBeenCalledWith('+password');
-
     expect(mockUser.matchPassword).toHaveBeenCalledWith('correctpassword');
 
-    // Strict requirement: identity verification should happen before deletion is saved
     expect(mockUser.matchPassword.mock.invocationCallOrder[0])
       .toBeLessThan(mockUser.save.mock.invocationCallOrder[0]);
 
@@ -66,14 +64,14 @@ describe('US2-3 Delete Account - deleteAccount Unit Tests', () => {
 
     expect(res.cookie).toHaveBeenCalledWith('token', 'none', {
       expires: new Date(0),
-      httpOnly: true
+      httpOnly: true,
     });
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       success: true,
       message: 'Account deleted successfully',
-      data: {}
+      data: {},
     });
   });
 
@@ -87,13 +85,13 @@ describe('US2-3 Delete Account - deleteAccount Unit Tests', () => {
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       success: false,
-      message: 'Please provide your password to confirm account deletion'
+      message: 'Please provide your password to confirm account deletion',
     });
   });
 
   test('TC3: should return 404 when user is not found', async () => {
     req.body = {
-      password: 'correctpassword'
+      password: 'correctpassword',
     };
 
     const selectMock = jest.fn().mockResolvedValue(null);
@@ -107,20 +105,20 @@ describe('US2-3 Delete Account - deleteAccount Unit Tests', () => {
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({
       success: false,
-      message: 'User not found'
+      message: 'User not found',
     });
   });
 
   test('TC4: should return 410 when account has already been deleted', async () => {
     req.body = {
-      password: 'correctpassword'
+      password: 'correctpassword',
     };
 
     const mockUser = {
       _id: 'user123',
       isDeleted: true,
       matchPassword: jest.fn(),
-      save: jest.fn()
+      save: jest.fn(),
     };
 
     const selectMock = jest.fn().mockResolvedValue(mockUser);
@@ -134,13 +132,13 @@ describe('US2-3 Delete Account - deleteAccount Unit Tests', () => {
     expect(res.status).toHaveBeenCalledWith(410);
     expect(res.json).toHaveBeenCalledWith({
       success: false,
-      message: 'This account has already been deleted'
+      message: 'This account has already been deleted',
     });
   });
 
   test('TC5: should return 401 and must not delete account when password is incorrect', async () => {
     req.body = {
-      password: 'wrongpassword'
+      password: 'wrongpassword',
     };
 
     const mockUser = {
@@ -148,7 +146,7 @@ describe('US2-3 Delete Account - deleteAccount Unit Tests', () => {
       isDeleted: false,
       deletedAt: null,
       matchPassword: jest.fn().mockResolvedValue(false),
-      save: jest.fn().mockResolvedValue(true)
+      save: jest.fn().mockResolvedValue(true),
     };
 
     const selectMock = jest.fn().mockResolvedValue(mockUser);
@@ -158,23 +156,21 @@ describe('US2-3 Delete Account - deleteAccount Unit Tests', () => {
 
     expect(mockUser.matchPassword).toHaveBeenCalledWith('wrongpassword');
 
-    // Strict requirement: wrong password must not delete account
     expect(mockUser.isDeleted).toBe(false);
     expect(mockUser.deletedAt).toBe(null);
     expect(mockUser.save).not.toHaveBeenCalled();
-
     expect(res.cookie).not.toHaveBeenCalled();
 
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({
       success: false,
-      message: 'Incorrect password'
+      message: 'Incorrect password',
     });
   });
 
   test('TC6: should return 500 when database error occurs', async () => {
     req.body = {
-      password: 'correctpassword'
+      password: 'correctpassword',
     };
 
     User.findById.mockImplementation(() => {
@@ -188,7 +184,7 @@ describe('US2-3 Delete Account - deleteAccount Unit Tests', () => {
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({
       success: false,
-      message: 'Database error'
+      message: 'Database error',
     });
 
     console.error.mockRestore();

@@ -4,7 +4,7 @@ jest.mock('../../models/User', () => ({
 }));
 
 const User = require('../../models/User');
-const { updateProfile } = require('../../controllers/profile');
+const { updateProfile } = require('../../controllers/auth');
 
 const mockResponse = () => {
   const res = {};
@@ -206,7 +206,29 @@ describe('US2-2 Edit Profile - updateProfile Unit Tests', () => {
     });
   });
 
-  test('TC8: should return validation error when telephone format is invalid', async () => {
+  test('TC6: should return 404 when user is not found', async () => {
+    req.body = {
+      name: 'New Name',
+      password: 'correctpassword',
+    };
+
+    User.findById.mockReturnValue({
+      select: jest.fn().mockResolvedValue(null),
+    });
+
+    await updateProfile(req, res, next);
+
+    expect(User.findById).toHaveBeenCalledWith('user123');
+    expect(User.findByIdAndUpdate).not.toHaveBeenCalled();
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      message: 'User not found',
+    });
+  });
+
+  test('TC7: should return validation error when telephone format is invalid', async () => {
     req.body = {
       telephone: '12345',
       password: 'correctpassword',
@@ -248,7 +270,7 @@ describe('US2-2 Edit Profile - updateProfile Unit Tests', () => {
     console.error.mockRestore();
   });
 
-  test('TC9: should not update dentist-only fields when normal user sends them', async () => {
+  test('TC8: should not update dentist-only fields when normal user sends them', async () => {
     req.user.role = 'user';
 
     req.body = {
@@ -278,26 +300,4 @@ describe('US2-2 Edit Profile - updateProfile Unit Tests', () => {
       message: 'Please provide at least one valid field to update',
     });
   });
-
-  test('TC6: should return 404 when user is not found', async () => {
-  req.body = {
-    name: 'New Name',
-    password: 'correctpassword',
-  };
-
-  User.findById.mockReturnValue({
-    select: jest.fn().mockResolvedValue(null),
-  });
-
-  await updateProfile(req, res, next);
-
-  expect(User.findById).toHaveBeenCalledWith('user123');
-  expect(User.findByIdAndUpdate).not.toHaveBeenCalled();
-
-  expect(res.status).toHaveBeenCalledWith(404);
-  expect(res.json).toHaveBeenCalledWith({
-    success: false,
-    message: 'User not found',
-  });
-});
 });

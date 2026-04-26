@@ -7,13 +7,13 @@ const sendTokenResponse = (user, statusCode, res) => {
 
     // Setting Expires
     const options = {
-        expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRE*24*60*60*1000),
         httpOnly: true
     };
 
     // Is in development?
     if (process.env.NODE_ENV === 'production') {
-        options.secure = true;
+        options.secure=true;
     }
 
     res.status(statusCode).cookie('token', token, options).json({
@@ -21,7 +21,7 @@ const sendTokenResponse = (user, statusCode, res) => {
         data: user,
         token
     });
-};
+}
 
 // @desc    Register
 // @route   POST /auth/register
@@ -29,16 +29,7 @@ const sendTokenResponse = (user, statusCode, res) => {
 exports.register = async (req, res, next) => {
     try {
         // Get body request
-        const {
-            name,
-            telephone,
-            email,
-            password,
-            role,
-            privacyPolicyAccepted,
-            yearsOfExperience,
-            areaOfExpertise
-        } = req.body;
+        const {name, telephone, email, password, role, privacyPolicyAccepted, yearsOfExperience, areaOfExpertise} = req.body;
 
         // Validate privacy policy acceptance
         if (!privacyPolicyAccepted) {
@@ -57,7 +48,6 @@ exports.register = async (req, res, next) => {
                     message: "This email was previously registered and deleted. Please contact support to reactivate."
                 });
             }
-
             return res.status(409).json({
                 success: false,
                 message: "Email already in use"
@@ -66,19 +56,14 @@ exports.register = async (req, res, next) => {
 
         // Register
         const userData = {
-            name,
-            telephone,
-            email,
-            password,
-            role,
-            privacyPolicyAccepted,
+            name, telephone, email, password, role, privacyPolicyAccepted,
             ...(role === 'dentist' && { yearsOfExperience, areaOfExpertise })
         };
 
         const user = await User.create(userData);
-
+        
         sendTokenResponse(user, 201, res);
-    } catch (err) {
+    }catch (err) {
         res.status(400).json({
             success: false,
             message: err.message
@@ -93,57 +78,47 @@ exports.register = async (req, res, next) => {
 exports.login = async (req, res, next) => {
     try {
         // Get body request
-        const { email, password } = req.body;
+        const {email, password} = req.body;
 
         // Validate email & password
-        if (!email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "Please provide an email and password"
-            });
-        }
+        if (!email || !password) return res.status(400).json({
+            success: false,
+            message: "Please provide an email and password"
+        });
 
         // Find user in database
         email.toLowerCase();
-        const user = await User.findOne({ email }).select('+password');
+        const user = await User.findOne({email}).select('+password');
 
         // Don't find user in database
-        if (!user) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid credentials"
-            });
-        }
+        if (!user) return res.status(401).json({
+            success: false,
+            message: "Invalid credentials"
+        });
 
         // Check if account is deleted
-        if (user.isDeleted) {
-            return res.status(403).json({
-                success: false,
-                message: "This account has been deleted"
-            });
-        }
+        if (user.isDeleted) return res.status(403).json({
+            success: false,
+            message: "This account has been deleted"
+        });
 
         // Check if account is banned
-        if (user.isBanned) {
-            return res.status(403).json({
-                success: false,
-                message: `This account has been banned${user.banReason ? ': ' + user.banReason : ''}`
-            });
-        }
+        if (user.isBanned) return res.status(403).json({
+            success: false,
+            message: `This account has been banned${user.banReason ? ': ' + user.banReason : ''}`
+        });
 
         // Check matched password
         const isMatch = await user.matchPassword(password);
 
         // Password don't match
-        if (!isMatch) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid password"
-            });
-        }
+        if (!isMatch) return res.status(401).json({
+            success: false,
+            message: "Invalid password"
+        });
 
         sendTokenResponse(user, 200, res);
-    } catch (err) {
+    }catch (err) {
         res.status(500).json({
             success: false,
             message: err.message
@@ -193,7 +168,7 @@ exports.me = async (req, res, next) => {
 // @access  Private
 exports.logout = async (req, res, next) => {
     res.cookie('token', 'none', {
-        expires: new Date(Date.now() + 10 * 1000),
+        expires: new Date(Date.now() + 10*1000),
         httpOnly: true
     });
 
@@ -211,6 +186,7 @@ exports.deleteAccount = async (req, res, next) => {
     try {
         const { password } = req.body;
 
+        //Check if password is provided
         if (!password) {
             return res.status(400).json({
                 success: false,
@@ -218,6 +194,7 @@ exports.deleteAccount = async (req, res, next) => {
             });
         }
 
+        //Find user by ID and include password field
         const user = await User.findById(req.user.id).select('+password');
 
         if (!user) {
@@ -234,6 +211,7 @@ exports.deleteAccount = async (req, res, next) => {
             });
         }
 
+        //(Fix) Verify password BEFORE modifying any data
         const isMatch = await user.matchPassword(password);
         if (!isMatch) {
             return res.status(401).json({
@@ -242,17 +220,18 @@ exports.deleteAccount = async (req, res, next) => {
             });
         }
 
-        // Soft delete: set isDeleted flag and deletedAt timestamp
+        //Password is correct, proceed with soft delete
         user.isDeleted = true;
         user.deletedAt = new Date();
         await user.save();
 
-        // Clear the authentication cookie and logout
+        // 5. Clear cookie (Logout user)
         res.cookie('token', 'none', {
             expires: new Date(0),
             httpOnly: true
         });
 
+        //Send response
         res.status(200).json({
             success: true,
             message: "Account deleted successfully",
@@ -272,7 +251,7 @@ exports.deleteAccount = async (req, res, next) => {
 // @access  Private only admin
 exports.banUser = async (req, res, next) => {
     try {
-        const { userId, reason } = req.body;
+        const {userId, reason} = req.body;
 
         if (!userId) {
             return res.status(400).json({
@@ -327,7 +306,7 @@ exports.banUser = async (req, res, next) => {
 // @access  Private only admin
 exports.unbanUser = async (req, res, next) => {
     try {
-        const { userId } = req.body;
+        const {userId} = req.body;
 
         if (!userId) {
             return res.status(400).json({
@@ -375,15 +354,98 @@ exports.unbanUser = async (req, res, next) => {
     }
 };
 
+// @desc    Update user profile
+// @route   PUT /auth/updateprofile
+// @access  Private
+// @desc    Update user profile
+// @route   PUT /auth/updateprofile
+// @access  Private
+exports.updateProfile = async (req, res, next) => {
+    try {
+        //Extract inputs from request body
+        const { name, telephone, areaOfExpertise, yearsOfExperience, password } = req.body;
+
+        //Require password for security confirmation
+        if (!password) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide your password to confirm profile update"
+            });
+        }
+
+        //Find the user making the request and include password for verification
+        const user = await User.findById(req.user.id).select('+password');
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        //Verify password before allowing any updates
+        const isMatch = await user.matchPassword(password);
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: "Incorrect password"
+            });
+        }
+
+        //Build the update object securely based on user role (Prevent Mass Assignment)
+        const updateData = {};
+
+        //Common fields for all user roles
+        if (name) updateData.name = name;
+        if (telephone) updateData.telephone = telephone;
+
+        //Role-specific fields (ONLY allowed if the user is a dentist)
+        if (user.role === 'dentist') {
+            if (areaOfExpertise) updateData.areaOfExpertise = areaOfExpertise;
+            if (yearsOfExperience !== undefined) updateData.yearsOfExperience = yearsOfExperience;
+        }
+
+        //Check if there is actually anything to update after filtering
+        //This prevents unnecessary database calls if a normal user sends ONLY dentist fields
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide at least one valid field to update"
+            });
+        }
+
+        //Execute the update
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.id,
+            updateData,
+            {
+                new: true, // Return the updated document
+                runValidators: true // Ensure new data meets schema validation rules
+            }
+        );
+
+        //Send success response
+        res.status(200).json({
+            success: true,
+            message: "Profile updated successfully",
+            data: updatedUser
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
 // @desc    View all user
 // @route   GET /api/auth/getusers
 // @access  Private (Admin Only)
 exports.getUsers = async (req, res, next) => {
     try {
-        const users = await User.find({
-            role: { $in: ['user', 'dentist'] },
-            isDeleted: false
-        }).select('-password');
+        const users = await User.find({ role: { $in: ['user', 'dentist'] }, isDeleted: false }).select('-password');
 
         res.status(200).json({
             success: true,
