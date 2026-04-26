@@ -209,11 +209,6 @@ exports.deleteAccount = async (req, res, next) => {
             });
         }
 
-        // Soft delete: set isDeleted flag and deletedAt timestamp
-        user.isDeleted = true;
-        user.deletedAt = new Date();
-        await user.save();
-
         const isMatch = await user.matchPassword(password);
         if (!isMatch) {
             return res.status(401).json({
@@ -221,6 +216,11 @@ exports.deleteAccount = async (req, res, next) => {
                 message: "Incorrect password"
             });
         }
+
+        // Soft delete: set isDeleted flag and deletedAt timestamp
+        user.isDeleted = true;
+        user.deletedAt = new Date();
+        await user.save();
 
         // Clear the authentication cookie and logout
         res.cookie('token', 'none', {
