@@ -357,9 +357,6 @@ exports.unbanUser = async (req, res, next) => {
 // @desc    Update user profile
 // @route   PUT /auth/updateprofile
 // @access  Private
-// @desc    Update user profile
-// @route   PUT /auth/updateprofile
-// @access  Private
 exports.updateProfile = async (req, res, next) => {
     try {
         //Extract inputs from request body
@@ -445,7 +442,7 @@ exports.updateProfile = async (req, res, next) => {
 // @access  Private (Admin Only)
 exports.getUsers = async (req, res, next) => {
     try {
-        const users = await User.find({ role: { $in: ['user', 'dentist'] }, isDeleted: false }).select('-password');
+        const users = await User.find({ isDeleted: false }).select('-password');
 
         res.status(200).json({
             success: true,

@@ -579,7 +579,6 @@ describe('Sprint2 extra coverage for auth controller', () => {
       await getUsers(req, res, next);
 
       expect(User.find).toHaveBeenCalledWith({
-        role: { $in: ['user', 'dentist'] },
         isDeleted: false,
       });
       expect(selectMock).toHaveBeenCalledWith('-password');
