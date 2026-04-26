@@ -140,5 +140,89 @@ describe('US2-4: Ban User', () => {
         });
         
     });
-        
+    
+    // AC2: Banned user try to login → deny
+    describe('AC2 - Banned user attempts to login', () => {
+        // TC7: user try to login but is banned + reason
+        test('TC7: should deny login and return 403 when user is banned (with ban reason)', async () => {
+            const mockUser = {
+                isDeleted: false,
+                isBanned: true,
+                banReason: 'Violated policy',
+                matchPassword: jest.fn(),
+            };
+    
+            const req = {
+                body: { email: 'banned@example.com', password: 'password123' },
+            };
+            const res = mockRes();
+    
+            User.findOne.mockReturnValue({
+                select: jest.fn().mockResolvedValue(mockUser),
+            });
+    
+            await login(req, res);
+    
+            expect(res.status).toHaveBeenCalledWith(403);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    message: 'This account has been banned: Violated policy',
+                })
+            );
+            expect(mockUser.matchPassword).not.toHaveBeenCalled();
+        });
+        // TC8: user try to login but is banned + no reason
+        test('TC8: should deny login and return 403 when user is banned (without ban reason)', async () => {
+            const mockUser = {
+                isDeleted: false,
+                isBanned: true,
+                banReason: null,
+                matchPassword: jest.fn(),
+            };
+    
+            const req = {
+                body: { email: 'banned@example.com', password: 'password123' },
+            };
+            const res = mockRes();
+    
+            User.findOne.mockReturnValue({
+                select: jest.fn().mockResolvedValue(mockUser),
+            });
+    
+            await login(req, res);
+    
+            expect(res.status).toHaveBeenCalledWith(403);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    message: 'This account has been banned',
+                })
+            );
+        });
+        // TC9: normal login
+        test('TC9: should allow login when user is not banned', async () => {
+            const mockUser = {
+                isDeleted: false,
+                isBanned: false,
+                matchPassword: jest.fn().mockResolvedValue(true),
+                getSignedJwtToken: jest.fn().mockReturnValue('mock_token'),
+            };
+    
+            const req = {
+                body: { email: 'normal@example.com', password: 'password123' },
+            };
+            const res = mockRes();
+    
+            User.findOne.mockReturnValue({
+                select: jest.fn().mockResolvedValue(mockUser),
+            });
+    
+            await login(req, res);
+    
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({ success: true })
+            );
+        });
+    
+    });
 });
