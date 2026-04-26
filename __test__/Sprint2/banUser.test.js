@@ -79,6 +79,18 @@ describe('US2-4: Ban User', () => {
             expect(mockUser.banReason).toBe('No reason provided');
             expect(res.status).toHaveBeenCalledWith(200);
         });
+        // TC3: no userId
+        test('TC3: should return 400 when userId is not provided', async () => {
+            const req = { body: {} };
+            const res = mockRes();
+
+            await banUser(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({ message: 'Please provide userId' })
+            );
+        });
 
     });
         
