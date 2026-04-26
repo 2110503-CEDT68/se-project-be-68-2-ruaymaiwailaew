@@ -186,6 +186,7 @@ exports.deleteAccount = async (req, res, next) => {
     try {
         const { password } = req.body;
 
+        // 1. ตรวจสอบว่ามีการส่งรหัสผ่านเข้ามาหรือไม่
         if (!password) {
             return res.status(400).json({
                 success: false,
@@ -193,6 +194,7 @@ exports.deleteAccount = async (req, res, next) => {
             });
         }
 
+        // 2. ดึงข้อมูล User ขึ้นมา
         const user = await User.findById(req.user.id).select('+password');
 
         if (!user) {
@@ -209,11 +211,7 @@ exports.deleteAccount = async (req, res, next) => {
             });
         }
 
-        // Soft delete: set isDeleted flag and deletedAt timestamp
-        user.isDeleted = true;
-        user.deletedAt = new Date();
-        await user.save();
-
+        // 3. (จุดที่แก้) เช็ครหัสผ่านก่อนทำการเปลี่ยนแปลงข้อมูลใดๆ!
         const isMatch = await user.matchPassword(password);
         if (!isMatch) {
             return res.status(401).json({
@@ -222,12 +220,18 @@ exports.deleteAccount = async (req, res, next) => {
             });
         }
 
-        // Clear the authentication cookie and logout
+        // 4. รหัสผ่านถูกต้อง ค่อยทำการ Soft delete
+        user.isDeleted = true;
+        user.deletedAt = new Date();
+        await user.save();
+
+        // 5. เคลียร์ Cookie (เตะออกจากระบบ)
         res.cookie('token', 'none', {
             expires: new Date(0),
             httpOnly: true
         });
 
+        // 6. ส่ง Response กลับ
         res.status(200).json({
             success: true,
             message: "Account deleted successfully",
