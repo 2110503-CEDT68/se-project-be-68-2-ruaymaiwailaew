@@ -43,14 +43,14 @@ describe('updateBooking', () => {
         mockFindById(fakeBooking);
         Booking.findByIdAndUpdate.mockReturnValue({
             populate: jest.fn().mockReturnValue({
-                populate: jest.fn().mockResolvedValue({ ...fakeBooking, bookingDate: '2025-01-01' })
+                populate: jest.fn().mockResolvedValue({ ...fakeBooking, bookingDate: '2030-01-01' })
             })
         });
 
         const req = {
             params: { id: 'b1' },
             user: { id: 'admin1', role: 'admin' },
-            body: { bookingDate: '2025-01-01' }
+            body: { bookingDate: '2030-01-01' }
         };
         const res = mockRes();
 
@@ -70,14 +70,14 @@ describe('updateBooking', () => {
         mockFindById(fakeBooking);
         Booking.findByIdAndUpdate.mockReturnValue({
             populate: jest.fn().mockReturnValue({
-                populate: jest.fn().mockResolvedValue({ ...fakeBooking, bookingDate: '2025-02-01' })
+                populate: jest.fn().mockResolvedValue({ ...fakeBooking, bookingDate: '2030-01-01' })
             })
         });
 
         const req = {
             params: { id: 'b1' },
             user: { id: 'u1', role: 'user' },
-            body: { bookingDate: '2025-02-01' }
+            body: { bookingDate: '2030-01-01' }
         };
         const res = mockRes();
 
@@ -117,14 +117,14 @@ describe('updateBooking', () => {
         mockFindById(fakeBooking);
         Booking.findByIdAndUpdate.mockReturnValue({
             populate: jest.fn().mockReturnValue({
-                populate: jest.fn().mockResolvedValue({ ...fakeBooking, bookingDate: '2025-03-01' })
+                populate: jest.fn().mockResolvedValue({ ...fakeBooking, bookingDate: '2030-01-01' })
             })
         });
 
         const req = {
             params: { id: 'b1' },
             user: { id: 'd1', role: 'dentist' },
-            body: { bookingDate: '2025-03-01' }
+            body: { bookingDate: '2030-01-01' }
         };
         const res = mockRes();
 
