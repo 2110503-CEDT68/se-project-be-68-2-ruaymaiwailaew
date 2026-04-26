@@ -214,6 +214,19 @@ exports.createBooking = async (req, res, next) => {
             });
         }
 
+        // Prevent booking in the past
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(bookingDate);
+        selectedDate.setHours(0, 0, 0, 0);
+
+        if (selectedDate < today) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot create a booking in the past'
+            });
+        }
+
         const booking = await Booking.create({
             bookingDate,
             user: req.user.id,
@@ -281,6 +294,21 @@ exports.updateBooking = async (req, res, next) => {
             });
 
             if (conflict) return res.status(400).json({success: false, message: `The dentist is not available on ${new Date(bookingDate).toDateString()}`});
+        }
+
+        // Prevent updating booking to a past date
+        if (req.body.bookingDate) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const selectedDate = new Date(req.body.bookingDate);
+            selectedDate.setHours(0, 0, 0, 0);
+
+            if (selectedDate < today) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Cannot update a booking to a past date'
+                });
+            }
         }
 
         const updateData = {};
