@@ -4,7 +4,7 @@ jest.mock('../../models/User', () => ({
 }));
 
 const User = require('../../models/User');
-const { updateProfile } = require('../../controllers/auth');
+const { updateProfile } = require('../../controllers/profile');
 
 const mockResponse = () => {
   const res = {};
@@ -278,4 +278,26 @@ describe('US2-2 Edit Profile - updateProfile Unit Tests', () => {
       message: 'Please provide at least one valid field to update',
     });
   });
+
+  test('TC6: should return 404 when user is not found', async () => {
+  req.body = {
+    name: 'New Name',
+    password: 'correctpassword',
+  };
+
+  User.findById.mockReturnValue({
+    select: jest.fn().mockResolvedValue(null),
+  });
+
+  await updateProfile(req, res, next);
+
+  expect(User.findById).toHaveBeenCalledWith('user123');
+  expect(User.findByIdAndUpdate).not.toHaveBeenCalled();
+
+  expect(res.status).toHaveBeenCalledWith(404);
+  expect(res.json).toHaveBeenCalledWith({
+    success: false,
+    message: 'User not found',
+  });
+});
 });

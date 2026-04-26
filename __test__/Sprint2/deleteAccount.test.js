@@ -3,7 +3,7 @@ jest.mock('../../models/User', () => ({
 }));
 
 const User = require('../../models/User');
-const { deleteAccount } = require('../../controllers/auth');
+const { deleteAccount } = require('../../controllers/account');
 
 const mockResponse = () => {
   const res = {};
