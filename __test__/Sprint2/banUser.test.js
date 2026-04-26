@@ -91,7 +91,54 @@ describe('US2-4: Ban User', () => {
                 expect.objectContaining({ message: 'Please provide userId' })
             );
         });
+        // TC4: user not found
+        test('TC4: should return 404 when user is not found', async () => {
+            const req = { body: { userId: 'nonexistent' } };
+            const res = mockRes();
 
+            User.findById.mockResolvedValue(null);
+
+            await banUser(req, res);
+        
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({ message: 'User not found' })
+            );
+        });
+        // TC5: user already banned
+        test('TC5: should return 400 when user is already banned', async () => {
+            const mockUser = {
+                _id: 'user123',
+                isBanned: true,
+            };
+        
+            const req = { body: { userId: 'user123' } };
+            const res = mockRes();
+        
+            User.findById.mockResolvedValue(mockUser);
+        
+            await banUser(req, res);
+        
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({ message: 'This user is already banned' })
+            );
+        });
+        // TC6: something when wrong
+        test('TC6: should return 500 when an unexpected error occurs', async () => {
+            const req = { body: { userId: 'user123' } };
+            const res = mockRes();
+        
+            User.findById.mockRejectedValue(new Error('DB error'));
+        
+            await banUser(req, res);
+        
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({ success: false })
+            );
+        });
+        
     });
         
 });
