@@ -186,6 +186,7 @@ exports.deleteAccount = async (req, res, next) => {
     try {
         const { password } = req.body;
 
+        //Check if password is provided
         if (!password) {
             return res.status(400).json({
                 success: false,
@@ -193,6 +194,7 @@ exports.deleteAccount = async (req, res, next) => {
             });
         }
 
+        //Find user by ID and include password field
         const user = await User.findById(req.user.id).select('+password');
 
         if (!user) {
@@ -209,6 +211,7 @@ exports.deleteAccount = async (req, res, next) => {
             });
         }
 
+        //(Fix) Verify password BEFORE modifying any data
         const isMatch = await user.matchPassword(password);
         if (!isMatch) {
             return res.status(401).json({
@@ -217,17 +220,18 @@ exports.deleteAccount = async (req, res, next) => {
             });
         }
 
-        // Soft delete: set isDeleted flag and deletedAt timestamp
+        //Password is correct, proceed with soft delete
         user.isDeleted = true;
         user.deletedAt = new Date();
         await user.save();
 
-        // Clear the authentication cookie and logout
+        // 5. Clear cookie (Logout user)
         res.cookie('token', 'none', {
             expires: new Date(0),
             httpOnly: true
         });
 
+        //Send response
         res.status(200).json({
             success: true,
             message: "Account deleted successfully",
@@ -353,26 +357,23 @@ exports.unbanUser = async (req, res, next) => {
 // @desc    Update user profile
 // @route   PUT /auth/updateprofile
 // @access  Private
+// @desc    Update user profile
+// @route   PUT /auth/updateprofile
+// @access  Private
 exports.updateProfile = async (req, res, next) => {
     try {
-        // Get fields to update (allow only specific fields)
-        const {name, telephone, areaOfExpertise, yearsOfExperience, password} = req.body;
+        //Extract inputs from request body
+        const { name, telephone, areaOfExpertise, yearsOfExperience, password } = req.body;
 
+        //Require password for security confirmation
         if (!password) {
             return res.status(400).json({
                 success: false,
-                message: "Please provide your password to confirm"
+                message: "Please provide your password to confirm profile update"
             });
         }
 
-        // Validate input
-        if (!name && !telephone && !areaOfExpertise && yearsOfExperience === undefined) {
-            return res.status(400).json({
-                success: false,
-                message: "Please provide at least one field to update"
-            });
-        }
-
+        //Find the user making the request and include password for verification
         const user = await User.findById(req.user.id).select('+password');
 
         if (!user) {
@@ -382,6 +383,7 @@ exports.updateProfile = async (req, res, next) => {
             });
         }
 
+        //Verify password before allowing any updates
         const isMatch = await user.matchPassword(password);
         if (!isMatch) {
             return res.status(401).json({
@@ -390,28 +392,45 @@ exports.updateProfile = async (req, res, next) => {
             });
         }
 
-        // Build update object with only provided fields
+        //Build the update object securely based on user role (Prevent Mass Assignment)
         const updateData = {};
+
+        //Common fields for all user roles
         if (name) updateData.name = name;
         if (telephone) updateData.telephone = telephone;
-        if (areaOfExpertise) updateData.areaOfExpertise = areaOfExpertise;
-        if (yearsOfExperience !== undefined) updateData.yearsOfExperience = yearsOfExperience;
 
-        // Update user
+        //Role-specific fields (ONLY allowed if the user is a dentist)
+        if (user.role === 'dentist') {
+            if (areaOfExpertise) updateData.areaOfExpertise = areaOfExpertise;
+            if (yearsOfExperience !== undefined) updateData.yearsOfExperience = yearsOfExperience;
+        }
+
+        //Check if there is actually anything to update after filtering
+        //This prevents unnecessary database calls if a normal user sends ONLY dentist fields
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide at least one valid field to update"
+            });
+        }
+
+        //Execute the update
         const updatedUser = await User.findByIdAndUpdate(
             req.user.id,
             updateData,
             {
-                new: true,
-                runValidators: true
+                new: true, // Return the updated document
+                runValidators: true // Ensure new data meets schema validation rules
             }
         );
 
+        //Send success response
         res.status(200).json({
             success: true,
-            data: updatedUser,
-            message: "Profile updated successfully"
+            message: "Profile updated successfully",
+            data: updatedUser
         });
+
     } catch (err) {
         console.error(err);
         res.status(500).json({

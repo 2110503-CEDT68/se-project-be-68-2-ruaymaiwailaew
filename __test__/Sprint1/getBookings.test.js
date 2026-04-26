@@ -1,8 +1,8 @@
 // __tests__/getBookings.test.js
-const { getBookings } = require('../controllers/bookings');
-const Booking = require('../models/Booking');
+const { getBookings } = require('../../controllers/bookings');
+const Booking = require('../../models/Booking');
 
-jest.mock('../models/Booking');
+jest.mock('../../models/Booking');
 
 const mockRes = () => {
     const res = {};
