@@ -1,16 +1,3 @@
-const {
-    register,
-    login,
-    me,
-    logout,
-    banUser,
-    unbanUser,
-    getUsers
-} = require('../controllers/auth');
-
-const { updateProfile } = require('../controllers/profile');
-const { deleteAccount } = require('../controllers/account');
-
 const express = require('express');
 
 // Controller file
