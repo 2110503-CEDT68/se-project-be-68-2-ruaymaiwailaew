@@ -204,6 +204,69 @@ exports.logout = async (req, res, next) => {
     });
 };
 
+// @desc    Delete account (soft delete)
+// @route   POST /auth/deleteaccount
+// @access  Private
+exports.deleteAccount = async (req, res, next) => {
+    try {
+        const { password } = req.body;
+
+        if (!password) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide your password to confirm account deletion"
+            });
+        }
+
+        const user = await User.findById(req.user.id).select('+password');
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        if (user.isDeleted) {
+            return res.status(410).json({
+                success: false,
+                message: "This account has already been deleted"
+            });
+        }
+
+        const isMatch = await user.matchPassword(password);
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: "Incorrect password"
+            });
+        }
+
+        // Soft delete: set isDeleted flag and deletedAt timestamp
+        user.isDeleted = true;
+        user.deletedAt = new Date();
+        await user.save();
+
+        // Clear the authentication cookie and logout
+        res.cookie('token', 'none', {
+            expires: new Date(0),
+            httpOnly: true
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Account deleted successfully",
+            data: {}
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
 // @desc    Ban user/dentist
 // @route   POST /auth/ban
 // @access  Private only admin
