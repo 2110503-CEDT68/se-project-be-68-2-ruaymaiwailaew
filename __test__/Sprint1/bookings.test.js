@@ -1,5 +1,5 @@
-const { updateBooking } = require('../controllers/bookings');
-const Booking = require('../models/Booking');
+const { updateBooking } = require('../../controllers/bookings');
+const Booking = require('../../models/Booking');
 
 jest.mock('../models/Booking');
 
