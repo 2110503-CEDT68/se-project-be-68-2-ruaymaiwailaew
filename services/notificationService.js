@@ -89,11 +89,11 @@ exports.sendBookingUpdatedNotification = async (recipient, booking, otherUser, r
             minute: '2-digit'
         });
 
-        const subject = role === 'user' 
+        const subject = role === 'dentist' 
             ? 'คุณแพทย์ได้แก้ไขนัดหมอของคุณแล้ว'
             : 'ผู้ใช้ได้แก้ไขนัดหมอแล้ว';
 
-        const message = role === 'user'
+        const message = role === 'dentist'
             ? `คุณแพทย์ ${otherUser.name} ได้แก้ไขนัดหมอของคุณ`
             : `${otherUser.name} ได้แก้ไขนัดหมอแล้ว`;
 
@@ -148,11 +148,11 @@ exports.sendBookingDeletedNotification = async (recipient, booking, otherUser, r
             minute: '2-digit'
         });
 
-        const subject = role === 'user'
+        const subject = role === 'dentist'
             ? 'คุณแพทย์ได้ยกเลิกนัดหมอของคุณแล้ว'
             : 'ผู้ใช้ได้ยกเลิกนัดหมอแล้ว';
 
-        const message = role === 'user'
+        const message = role === 'dentist'
             ? `คุณแพทย์ ${otherUser.name} ได้ยกเลิกนัดหมอของคุณ`
             : `${otherUser.name} ได้ยกเลิกนัดหมอแล้ว`;
 
