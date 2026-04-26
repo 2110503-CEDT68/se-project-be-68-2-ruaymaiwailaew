@@ -2,7 +2,7 @@
 const { getBookings } = require('../../controllers/bookings');
 const Booking = require('../../models/Booking');
 
-jest.mock('../models/Booking');
+jest.mock('../../models/Booking');
 
 const mockRes = () => {
     const res = {};
