@@ -1,5 +1,5 @@
-const { deleteBooking } = require('../controllers/bookings');
-const Booking = require('../models/Booking');
+const { deleteBooking } = require('../../controllers/bookings');
+const Booking = require('../../models/Booking');
 
 jest.mock('../models/Booking');
 
