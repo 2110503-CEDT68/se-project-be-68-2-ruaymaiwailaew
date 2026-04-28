@@ -349,8 +349,6 @@ const openApiSpec = {
                     201: {
                         description: 'Registered successfully – JWT returned in body and cookie',
                         content: {
-                    },
-                    500: { $ref: '#/components/responses/InternalError' }
                             'application/json': {
                                 schema: { $ref: '#/components/schemas/AuthResponse' }
                             }
@@ -367,7 +365,8 @@ const openApiSpec = {
                     409: {
                         description: 'Email already in use (or previously deleted)',
                         content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
-                    }
+                    },
+                    500: { $ref: '#/components/responses/InternalError' }
                 }
             }
         },
