@@ -208,7 +208,7 @@ exports.createBooking = async (req, res, next) => {
         });
 
         if (dentistBooking) {
-            return res.status(400).json({
+            return res.status(409).json({
                 success: false,
                 message: `The dentist is not available on ${new Date(bookingDate).toDateString()}`
             });
@@ -293,7 +293,7 @@ exports.updateBooking = async (req, res, next) => {
                 }
             });
 
-            if (conflict) return res.status(400).json({success: false, message: `The dentist is not available on ${new Date(bookingDate).toDateString()}`});
+            if (conflict) return res.status(409).json({success: false, message: `The dentist is not available on ${new Date(bookingDate).toDateString()}`});
         }
 
         // Prevent updating booking to a past date
