@@ -31,9 +31,7 @@ exports.sendBookingCreatedNotification = async (dentist, user, booking) => {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+            day: 'numeric'
         });
 
         await resend.emails.send({
@@ -84,9 +82,7 @@ exports.sendBookingUpdatedNotification = async (recipient, booking, otherUser, r
             weekday: 'long',
             year: 'numeric',
             month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+            day: 'numeric'
         });
 
         const subject = role === 'dentist' 
@@ -143,9 +139,7 @@ exports.sendBookingDeletedNotification = async (recipient, booking, otherUser, r
             weekday: 'long',
             year: 'numeric',
             month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+            day: 'numeric'
         });
 
         const subject = role === 'dentist'
