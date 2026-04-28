@@ -282,7 +282,7 @@ const openApiSpec = {
                 content: {
                     'application/json': {
                         schema: { $ref: '#/components/schemas/ErrorResponse' },
-                        example: { success: false, message: 'Not authorized to access this route' }
+                        example: { success: false, message: 'Not authorize to access this route' }
                     }
                 }
             },
@@ -349,6 +349,8 @@ const openApiSpec = {
                     201: {
                         description: 'Registered successfully – JWT returned in body and cookie',
                         content: {
+                    },
+                    500: { $ref: '#/components/responses/InternalError' }
                             'application/json': {
                                 schema: { $ref: '#/components/schemas/AuthResponse' }
                             }
@@ -455,7 +457,8 @@ const openApiSpec = {
                                 example: { success: true, message: 'Logged out successfully', data: {} }
                             }
                         }
-                    }
+                    },
+                    500: { $ref: '#/components/responses/InternalError' }
                 }
             }
         },
@@ -489,7 +492,8 @@ const openApiSpec = {
                     410: {
                         description: 'Account has already been deleted',
                         content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
-                    }
+                    },
+                    500: { $ref: '#/components/responses/InternalError' }
                 }
             }
         },
@@ -530,7 +534,8 @@ const openApiSpec = {
                         description: 'Incorrect password',
                         content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
                     },
-                    404: { $ref: '#/components/responses/NotFound' }
+                    404: { $ref: '#/components/responses/NotFound' },
+                    500: { $ref: '#/components/responses/InternalError' }
                 }
             }
         },
@@ -577,7 +582,8 @@ const openApiSpec = {
                     },
                     401: { $ref: '#/components/responses/Unauthorized' },
                     403: { $ref: '#/components/responses/Forbidden' },
-                    404: { $ref: '#/components/responses/NotFound' }
+                    404: { $ref: '#/components/responses/NotFound' },
+                    500: { $ref: '#/components/responses/InternalError' }
                 }
             }
         },
@@ -622,7 +628,8 @@ const openApiSpec = {
                     },
                     401: { $ref: '#/components/responses/Unauthorized' },
                     403: { $ref: '#/components/responses/Forbidden' },
-                    404: { $ref: '#/components/responses/NotFound' }
+                    404: { $ref: '#/components/responses/NotFound' },
+                    500: { $ref: '#/components/responses/InternalError' }
                 }
             }
         },
@@ -654,7 +661,8 @@ const openApiSpec = {
                         }
                     },
                     401: { $ref: '#/components/responses/Unauthorized' },
-                    403: { $ref: '#/components/responses/Forbidden' }
+                    403: { $ref: '#/components/responses/Forbidden' },
+                    500: { $ref: '#/components/responses/InternalError' }
                 }
             }
         },
@@ -685,7 +693,8 @@ const openApiSpec = {
                                 }
                             }
                         }
-                    }
+                    },
+                    500: { $ref: '#/components/responses/InternalError' }
                 }
             },
             post: {
@@ -721,11 +730,16 @@ const openApiSpec = {
                         }
                     },
                     400: {
-                        description: 'Already has a booking, dentist unavailable, missing fields, or account banned/deleted',
+                        description: 'Already has a booking, missing fields, account banned/deleted, or booking date in the past',
+                        content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+                    },
+                    409: {
+                        description: 'Dentist is not available on the requested date',
                         content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
                     },
                     401: { $ref: '#/components/responses/Unauthorized' },
-                    403: { $ref: '#/components/responses/Forbidden' }
+                    403: { $ref: '#/components/responses/Forbidden' },
+                    500: { $ref: '#/components/responses/InternalError' }
                 }
             }
         },
@@ -780,7 +794,8 @@ const openApiSpec = {
                         }
                     },
                     403: { $ref: '#/components/responses/Forbidden' },
-                    404: { $ref: '#/components/responses/NotFound' }
+                    404: { $ref: '#/components/responses/NotFound' },
+                    500: { $ref: '#/components/responses/InternalError' }
                 }
             },
             put: {
@@ -812,11 +827,16 @@ const openApiSpec = {
                         }
                     },
                     400: {
+                        description: 'Booking date is in the past',
+                        content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+                    },
+                    409: {
                         description: 'Dentist unavailable on the requested date',
                         content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
                     },
                     403: { $ref: '#/components/responses/Forbidden' },
-                    404: { $ref: '#/components/responses/NotFound' }
+                    404: { $ref: '#/components/responses/NotFound' },
+                    500: { $ref: '#/components/responses/InternalError' }
                 }
             },
             delete: {
@@ -830,13 +850,14 @@ const openApiSpec = {
                         description: 'Booking deleted',
                         content: {
                             'application/json': {
-                                schema: { $ref: '#/components/schemas/SuccessMessageResponse' },
+                                schema: { $ref: '#/components/schemas/SuccessObjectResponse' },
                                 example: { success: true, data: {} }
                             }
                         }
                     },
                     403: { $ref: '#/components/responses/Forbidden' },
-                    404: { $ref: '#/components/responses/NotFound' }
+                    404: { $ref: '#/components/responses/NotFound' },
+                    500: { $ref: '#/components/responses/InternalError' }
                 }
             }
         },
@@ -961,7 +982,7 @@ const openApiSpec = {
                 description: 'Hard-deletes the dentist and **cascades**: also deletes all associated bookings and reviews.',
                 parameters: [{ $ref: '#/components/parameters/IdParam' }],
                 responses: {
-                    200: { description: 'Dentist deleted', content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessMessageResponse' } } } },
+                    200: { description: 'Dentist deleted', content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessObjectResponse' } } } },
                     403: { $ref: '#/components/responses/Forbidden' },
                     404: { $ref: '#/components/responses/NotFound' },
                     500: { $ref: '#/components/responses/InternalError' }
@@ -1081,7 +1102,7 @@ const openApiSpec = {
                 security: [{ bearerAuth: [] }, { cookieAuth: [] }],
                 parameters: [{ $ref: '#/components/parameters/IdParam' }],
                 responses: {
-                    200: { description: 'Review deleted', content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessMessageResponse' } } } },
+                    200: { description: 'Review deleted', content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessObjectResponse' } } } },
                     403: { $ref: '#/components/responses/Forbidden' },
                     404: { $ref: '#/components/responses/NotFound' },
                     500: { $ref: '#/components/responses/InternalError' }
